@@ -873,3 +873,259 @@ INFO 2024-05-12 11:34:23,022 autoreload 64143 140134054761536 Watching for file 
 INFO 2024-05-12 12:22:08,233 autoreload 92541 140114468906048 Watching for file changes with StatReloader
 INFO 2024-05-12 12:22:12,568 basehttp 92541 140114405619264 "GET /api/unit HTTP/1.1" 301 0
 INFO 2024-05-12 12:22:12,578 basehttp 92541 140114405619264 "GET /api/unit/ HTTP/1.1" 200 167
+INFO 2024-05-13 10:34:10,404 autoreload 10106 140375517959232 Watching for file changes with StatReloader
+INFO 2024-05-13 10:37:32,072 basehttp 10106 140375454643776 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-13 10:37:32,092 basehttp 10106 140375454643776 "GET /api/goods/ HTTP/1.1" 200 564
+WARNING 2024-05-13 10:39:16,446 log 10106 140375454643776 Unauthorized: /api/accounts/login/
+WARNING 2024-05-13 10:39:16,446 basehttp 10106 140375454643776 "POST /api/accounts/login/ HTTP/1.1" 401 43
+WARNING 2024-05-13 10:42:48,496 log 10106 140375454643776 Unauthorized: /api/accounts/login/
+WARNING 2024-05-13 10:42:48,496 basehttp 10106 140375454643776 "POST /api/accounts/login/ HTTP/1.1" 401 43
+WARNING 2024-05-13 10:43:01,144 log 10106 140375454643776 Method Not Allowed: /api/accounts/login/
+WARNING 2024-05-13 10:43:01,144 basehttp 10106 140375454643776 "POST /api/accounts/login/ HTTP/1.1" 405 46
+WARNING 2024-05-13 10:44:19,306 log 10106 140375454643776 Unauthorized: /api/accounts/login/
+WARNING 2024-05-13 10:44:19,306 basehttp 10106 140375454643776 "POST /api/accounts/login/ HTTP/1.1" 401 43
+INFO 2024-05-13 10:46:36,615 basehttp 10106 140375454643776 "POST /api/login/ HTTP/1.1" 200 553
+INFO 2024-05-13 10:47:11,010 basehttp 10106 140375454643776 "POST /api/login/ HTTP/1.1" 200 553
+WARNING 2024-05-13 10:49:54,295 log 10106 140375454643776 Unauthorized: /api/accounts/
+WARNING 2024-05-13 10:49:54,296 basehttp 10106 140375454643776 "GET /api/accounts/ HTTP/1.1" 401 43
+INFO 2024-05-13 10:50:24,349 basehttp 10106 140375454643776 "GET /api/accounts/ HTTP/1.1" 200 141
+WARNING 2024-05-13 10:51:31,321 log 10106 140375454643776 Unauthorized: /api/accounts/
+WARNING 2024-05-13 10:51:31,322 basehttp 10106 140375454643776 "POST /api/accounts/ HTTP/1.1" 401 43
+INFO 2024-05-13 10:51:43,956 basehttp 10106 140375454643776 "POST /api/accounts/ HTTP/1.1" 201 70
+INFO 2024-05-13 10:51:55,308 basehttp 10106 140375454643776 "POST /api/accounts/ HTTP/1.1" 201 69
+INFO 2024-05-13 10:51:58,636 basehttp 10106 140375454643776 "GET /api/accounts/ HTTP/1.1" 200 282
+INFO 2024-05-13 10:52:09,131 basehttp 10106 140375454643776 "POST /api/accounts/ HTTP/1.1" 201 70
+INFO 2024-05-13 10:52:11,150 basehttp 10106 140375454643776 "GET /api/accounts/ HTTP/1.1" 200 353
+INFO 2024-05-13 10:52:27,089 basehttp 10106 140375454643776 "POST /api/login/ HTTP/1.1" 200 553
+INFO 2024-05-13 11:09:31,837 autoreload 31600 140161052406848 Watching for file changes with StatReloader
+INFO 2024-05-13 11:09:47,734 basehttp 31600 140160989132352 "GET /api/goods HTTP/1.1" 301 0
+ERROR 2024-05-13 11:09:47,758 log 31600 140160989132352 Internal Server Error: /api/goods/
+Traceback (most recent call last):
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/views.py", line 415, in initial
+    self.check_permissions(request)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/views.py", line 332, in check_permissions
+    if not permission.has_permission(request, self):
+  File "/home/mk/python/BUYproject/goods/permissions.py", line 5, in has_permission
+    return request.user.role == 0
+AttributeError: 'AnonymousUser' object has no attribute 'role'
+ERROR 2024-05-13 11:09:47,758 basehttp 31600 140160989132352 "GET /api/goods/ HTTP/1.1" 500 103579
+INFO 2024-05-13 11:10:53,856 autoreload 32336 140522513044544 Watching for file changes with StatReloader
+INFO 2024-05-13 11:10:55,406 basehttp 32336 140522449794624 "GET /api/goods HTTP/1.1" 301 0
+ERROR 2024-05-13 11:10:55,419 log 32336 140522449794624 Internal Server Error: /api/goods/
+Traceback (most recent call last):
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/views.py", line 415, in initial
+    self.check_permissions(request)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/views.py", line 332, in check_permissions
+    if not permission.has_permission(request, self):
+  File "/home/mk/python/BUYproject/goods/permissions.py", line 5, in has_permission
+    return request.user.role == 0
+AttributeError: 'AnonymousUser' object has no attribute 'role'
+ERROR 2024-05-13 11:10:55,419 basehttp 32336 140522449794624 "GET /api/goods/ HTTP/1.1" 500 103586
+INFO 2024-05-13 11:11:06,942 basehttp 32336 140522449794624 "GET /api/goods HTTP/1.1" 301 0
+ERROR 2024-05-13 11:11:06,955 log 32336 140522449794624 Internal Server Error: /api/goods/
+Traceback (most recent call last):
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/views.py", line 415, in initial
+    self.check_permissions(request)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/views.py", line 332, in check_permissions
+    if not permission.has_permission(request, self):
+  File "/home/mk/python/BUYproject/goods/permissions.py", line 5, in has_permission
+    return request.user.role == 0
+AttributeError: 'AnonymousUser' object has no attribute 'role'
+ERROR 2024-05-13 11:11:06,955 basehttp 32336 140522449794624 "GET /api/goods/ HTTP/1.1" 500 103586
+INFO 2024-05-13 11:11:10,364 basehttp 32336 140522449794624 "GET /api/price HTTP/1.1" 301 0
+ERROR 2024-05-13 11:11:10,376 log 32336 140522449794624 Internal Server Error: /api/price/
+Traceback (most recent call last):
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/views.py", line 415, in initial
+    self.check_permissions(request)
+  File "/home/mk/anaconda3/envs/web/lib/python3.9/site-packages/rest_framework/views.py", line 332, in check_permissions
+    if not permission.has_permission(request, self):
+  File "/home/mk/python/BUYproject/goods/permissions.py", line 5, in has_permission
+    return request.user.role == 0
+AttributeError: 'AnonymousUser' object has no attribute 'role'
+ERROR 2024-05-13 11:11:10,376 basehttp 32336 140522449794624 "GET /api/price/ HTTP/1.1" 500 103586
+INFO 2024-05-13 11:13:42,881 autoreload 33757 139699582100544 Watching for file changes with StatReloader
+INFO 2024-05-13 11:13:44,656 basehttp 33757 139699448444480 "GET /api/price HTTP/1.1" 301 0
+WARNING 2024-05-13 11:13:44,660 log 33757 139699448444480 Unauthorized: /api/price/
+WARNING 2024-05-13 11:13:44,660 basehttp 33757 139699448444480 "GET /api/price/ HTTP/1.1" 401 43
+INFO 2024-05-13 11:13:49,802 basehttp 33757 139699448444480 "GET /api/goods HTTP/1.1" 301 0
+WARNING 2024-05-13 11:13:49,805 log 33757 139699448444480 Unauthorized: /api/goods/
+WARNING 2024-05-13 11:13:49,805 basehttp 33757 139699448444480 "GET /api/goods/ HTTP/1.1" 401 43
+INFO 2024-05-13 11:14:06,581 basehttp 33757 139699448444480 "GET /api/goods HTTP/1.1" 301 0
+WARNING 2024-05-13 11:14:06,592 log 33757 139699448444480 Forbidden: /api/goods/
+WARNING 2024-05-13 11:14:06,592 basehttp 33757 139699448444480 "GET /api/goods/ HTTP/1.1" 403 49
+INFO 2024-05-13 11:14:17,306 basehttp 33757 139699448444480 "POST /api/login/ HTTP/1.1" 200 553
+INFO 2024-05-13 11:14:26,694 basehttp 33757 139699448444480 "GET /api/goods HTTP/1.1" 301 0
+WARNING 2024-05-13 11:14:26,701 log 33757 139699448444480 Forbidden: /api/goods/
+WARNING 2024-05-13 11:14:26,702 basehttp 33757 139699448444480 "GET /api/goods/ HTTP/1.1" 403 49
+INFO 2024-05-13 11:16:31,475 autoreload 35440 139769697137728 Watching for file changes with StatReloader
+INFO 2024-05-13 11:16:37,789 basehttp 35440 139769566459456 "GET /api/goods HTTP/1.1" 301 0
+WARNING 2024-05-13 11:16:37,799 log 35440 139769566459456 Forbidden: /api/goods/
+WARNING 2024-05-13 11:16:37,799 basehttp 35440 139769566459456 "GET /api/goods/ HTTP/1.1" 403 49
+INFO 2024-05-13 11:16:43,687 basehttp 35440 139769566459456 "POST /api/login/ HTTP/1.1" 200 553
+INFO 2024-05-13 11:16:55,033 basehttp 35440 139769566459456 "GET /api/goods HTTP/1.1" 301 0
+WARNING 2024-05-13 11:16:55,041 log 35440 139769566459456 Forbidden: /api/goods/
+WARNING 2024-05-13 11:16:55,041 basehttp 35440 139769566459456 "GET /api/goods/ HTTP/1.1" 403 49
+INFO 2024-05-13 11:17:04,222 basehttp 35440 139769566459456 "POST /api/login/ HTTP/1.1" 200 552
+INFO 2024-05-13 11:17:11,339 basehttp 35440 139769566459456 "GET /api/goods HTTP/1.1" 301 0
+WARNING 2024-05-13 11:17:11,346 log 35440 139769566459456 Forbidden: /api/goods/
+WARNING 2024-05-13 11:17:11,346 basehttp 35440 139769566459456 "GET /api/goods/ HTTP/1.1" 403 49
+INFO 2024-05-13 11:17:58,156 autoreload 35440 139769697137728 /home/mk/python/BUYproject/goods/permissions.py changed, reloading.
+INFO 2024-05-13 11:17:58,342 autoreload 36367 139891079238720 Watching for file changes with StatReloader
+INFO 2024-05-13 11:17:59,491 autoreload 36367 139891079238720 /home/mk/python/BUYproject/goods/permissions.py changed, reloading.
+INFO 2024-05-13 11:17:59,675 autoreload 36394 139911657706560 Watching for file changes with StatReloader
+INFO 2024-05-13 11:18:00,827 autoreload 36394 139911657706560 /home/mk/python/BUYproject/goods/permissions.py changed, reloading.
+INFO 2024-05-13 11:18:01,015 autoreload 36419 139903405212736 Watching for file changes with StatReloader
+INFO 2024-05-13 11:18:07,348 basehttp 36419 139903341950528 "GET /api/goods HTTP/1.1" 301 0
+WARNING 2024-05-13 11:18:07,358 log 36419 139903341950528 Forbidden: /api/goods/
+WARNING 2024-05-13 11:18:07,358 basehttp 36419 139903341950528 "GET /api/goods/ HTTP/1.1" 403 49
+INFO 2024-05-13 11:18:17,278 autoreload 36419 139903405212736 /home/mk/python/BUYproject/goods/permissions.py changed, reloading.
+INFO 2024-05-13 11:18:17,479 autoreload 36628 140521189446720 Watching for file changes with StatReloader
+INFO 2024-05-13 11:18:18,773 basehttp 36628 140521059120704 "GET /api/goods HTTP/1.1" 301 0
+WARNING 2024-05-13 11:18:18,783 log 36628 140521059120704 Forbidden: /api/goods/
+WARNING 2024-05-13 11:18:18,783 basehttp 36628 140521059120704 "GET /api/goods/ HTTP/1.1" 403 49
+INFO 2024-05-13 11:18:25,679 autoreload 36628 140521189446720 /home/mk/python/BUYproject/goods/permissions.py changed, reloading.
+INFO 2024-05-13 11:18:25,865 autoreload 36737 140473424348224 Watching for file changes with StatReloader
+INFO 2024-05-13 11:18:27,324 basehttp 36737 140473361233472 "GET /api/goods HTTP/1.1" 301 0
+WARNING 2024-05-13 11:18:27,334 log 36737 140473361233472 Forbidden: /api/goods/
+WARNING 2024-05-13 11:18:27,334 basehttp 36737 140473361233472 "GET /api/goods/ HTTP/1.1" 403 49
+INFO 2024-05-13 11:18:29,342 basehttp 36737 140473361233472 "GET /api/goods HTTP/1.1" 301 0
+WARNING 2024-05-13 11:18:29,351 log 36737 140473361233472 Forbidden: /api/goods/
+WARNING 2024-05-13 11:18:29,352 basehttp 36737 140473361233472 "GET /api/goods/ HTTP/1.1" 403 49
+INFO 2024-05-13 11:19:20,327 autoreload 36737 140473424348224 /home/mk/python/BUYproject/goods/views.py changed, reloading.
+INFO 2024-05-13 11:19:20,512 autoreload 37180 139873251124288 Watching for file changes with StatReloader
+INFO 2024-05-13 11:19:35,572 basehttp 37180 139873120417344 "POST /api/login/ HTTP/1.1" 200 553
+INFO 2024-05-13 11:19:42,308 basehttp 37180 139873120417344 "GET /api/goods HTTP/1.1" 301 0
+WARNING 2024-05-13 11:19:42,316 log 37180 139873120417344 Forbidden: /api/goods/
+WARNING 2024-05-13 11:19:42,316 basehttp 37180 139873120417344 "GET /api/goods/ HTTP/1.1" 403 49
+INFO 2024-05-13 11:19:52,851 autoreload 37180 139873251124288 /home/mk/python/BUYproject/goods/permissions.py changed, reloading.
+INFO 2024-05-13 11:19:53,040 autoreload 37480 140299096708160 Watching for file changes with StatReloader
+INFO 2024-05-13 11:19:55,192 autoreload 37480 140299096708160 /home/mk/python/BUYproject/goods/permissions.py changed, reloading.
+INFO 2024-05-13 11:19:55,382 autoreload 37520 140208928953408 Watching for file changes with StatReloader
+INFO 2024-05-13 11:19:56,942 basehttp 37520 140208798430784 "GET /api/goods HTTP/1.1" 301 0
+WARNING 2024-05-13 11:19:56,954 log 37520 140208798430784 Forbidden: /api/goods/
+WARNING 2024-05-13 11:19:56,954 basehttp 37520 140208798430784 "GET /api/goods/ HTTP/1.1" 403 49
+INFO 2024-05-13 11:20:52,864 autoreload 37520 140208928953408 /home/mk/python/BUYproject/goods/views.py changed, reloading.
+INFO 2024-05-13 11:20:53,050 autoreload 37958 140017863255104 Watching for file changes with StatReloader
+INFO 2024-05-13 11:20:55,169 basehttp 37958 140017800050240 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-13 11:20:55,187 basehttp 37958 140017800050240 "GET /api/goods/ HTTP/1.1" 200 564
+INFO 2024-05-13 11:21:05,900 basehttp 37958 140017800050240 "POST /api/login/ HTTP/1.1" 200 552
+INFO 2024-05-13 11:21:13,241 basehttp 37958 140017800050240 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-13 11:21:13,255 basehttp 37958 140017800050240 "GET /api/goods/ HTTP/1.1" 200 564
+INFO 2024-05-13 11:21:32,552 basehttp 37958 140017800050240 "POST /api/login/ HTTP/1.1" 200 553
+INFO 2024-05-13 11:21:38,785 basehttp 37958 140017800050240 "GET /api/goods HTTP/1.1" 301 0
+WARNING 2024-05-13 11:21:38,793 log 37958 140017800050240 Forbidden: /api/goods/
+WARNING 2024-05-13 11:21:38,793 basehttp 37958 140017800050240 "GET /api/goods/ HTTP/1.1" 403 49
+INFO 2024-05-13 11:22:19,806 autoreload 38722 140108517114944 Watching for file changes with StatReloader
+INFO 2024-05-13 11:23:44,410 autoreload 38722 140108517114944 /home/mk/python/BUYproject/account/serializers.py changed, reloading.
+INFO 2024-05-13 11:23:44,585 autoreload 39354 140129480512576 Watching for file changes with StatReloader
+WARNING 2024-05-13 11:23:52,313 log 39354 140129347827264 Method Not Allowed: /api/accounts/
+WARNING 2024-05-13 11:23:52,313 basehttp 39354 140129347827264 "PUT /api/accounts/ HTTP/1.1" 405 45
+WARNING 2024-05-13 11:24:02,831 log 39354 140129347827264 Method Not Allowed: /api/accounts/
+WARNING 2024-05-13 11:24:02,832 basehttp 39354 140129347827264 "PUT /api/accounts/ HTTP/1.1" 405 45
+WARNING 2024-05-13 11:24:25,115 log 39354 140129347827264 Method Not Allowed: /api/accounts/
+WARNING 2024-05-13 11:24:25,115 basehttp 39354 140129347827264 "PUT /api/accounts/ HTTP/1.1" 405 45
+WARNING 2024-05-13 11:25:18,183 log 39354 140129347827264 Bad Request: /api/accounts/4/
+WARNING 2024-05-13 11:25:18,183 basehttp 39354 140129347827264 "PUT /api/accounts/4/ HTTP/1.1" 400 37
+INFO 2024-05-13 11:26:09,573 autoreload 39354 140129480512576 /home/mk/python/BUYproject/account/serializers.py changed, reloading.
+INFO 2024-05-13 11:26:09,769 autoreload 40627 140602597475392 Watching for file changes with StatReloader
+WARNING 2024-05-13 11:26:12,719 log 40627 140602465318464 Bad Request: /api/accounts/4/
+WARNING 2024-05-13 11:26:12,719 basehttp 40627 140602465318464 "PUT /api/accounts/4/ HTTP/1.1" 400 37
+WARNING 2024-05-13 11:26:13,954 log 40627 140602465318464 Bad Request: /api/accounts/4/
+WARNING 2024-05-13 11:26:13,955 basehttp 40627 140602465318464 "PUT /api/accounts/4/ HTTP/1.1" 400 37
+INFO 2024-05-13 11:29:42,153 autoreload 40627 140602597475392 /home/mk/python/BUYproject/account/serializers.py changed, reloading.
+INFO 2024-05-13 11:29:42,342 autoreload 42466 140085208372288 Watching for file changes with StatReloader
+WARNING 2024-05-13 11:29:46,715 log 42466 140085145105984 Bad Request: /api/accounts/4/
+WARNING 2024-05-13 11:29:46,716 basehttp 42466 140085145105984 "PUT /api/accounts/4/ HTTP/1.1" 400 37
+WARNING 2024-05-13 11:29:47,840 log 42466 140085145105984 Bad Request: /api/accounts/4/
+WARNING 2024-05-13 11:29:47,840 basehttp 42466 140085145105984 "PUT /api/accounts/4/ HTTP/1.1" 400 37
+INFO 2024-05-13 11:29:53,581 autoreload 42466 140085208372288 /home/mk/python/BUYproject/account/serializers.py changed, reloading.
+INFO 2024-05-13 11:29:53,766 autoreload 42595 140630050452544 Watching for file changes with StatReloader
+INFO 2024-05-13 11:29:55,922 autoreload 42595 140630050452544 /home/mk/python/BUYproject/account/serializers.py changed, reloading.
+INFO 2024-05-13 11:29:56,105 autoreload 42636 139662073697344 Watching for file changes with StatReloader
+INFO 2024-05-13 11:29:59,258 autoreload 42636 139662073697344 /home/mk/python/BUYproject/account/serializers.py changed, reloading.
+INFO 2024-05-13 11:29:59,449 autoreload 42666 139944064046144 Watching for file changes with StatReloader
+INFO 2024-05-13 11:30:01,610 autoreload 42666 139944064046144 /home/mk/python/BUYproject/account/serializers.py changed, reloading.
+INFO 2024-05-13 11:30:01,802 autoreload 42701 140189866484800 Watching for file changes with StatReloader
+INFO 2024-05-13 11:30:05,954 autoreload 42701 140189866484800 /home/mk/python/BUYproject/account/serializers.py changed, reloading.
+INFO 2024-05-13 11:30:06,142 autoreload 42759 140515166798912 Watching for file changes with StatReloader
+INFO 2024-05-13 11:30:08,383 basehttp 42759 140515103471168 "PUT /api/accounts/4/ HTTP/1.1" 200 87
+WARNING 2024-05-13 11:30:16,454 log 42759 140515103471168 Bad Request: /api/login/
+WARNING 2024-05-13 11:30:16,454 basehttp 42759 140515103471168 "POST /api/login/ HTTP/1.1" 400 34
+INFO 2024-05-13 11:30:19,794 basehttp 42759 140515103471168 "POST /api/login/ HTTP/1.1" 200 554
+INFO 2024-05-13 11:30:35,513 autoreload 42759 140515166798912 /home/mk/python/BUYproject/account/serializers.py changed, reloading.
+INFO 2024-05-13 11:30:35,699 autoreload 43001 139881086354496 Watching for file changes with StatReloader
+INFO 2024-05-13 11:31:29,919 autoreload 43437 140641368056896 Watching for file changes with StatReloader
+INFO 2024-05-13 11:31:31,378 basehttp 43437 140641304835648 "POST /api/accounts/ HTTP/1.1" 201 70
+INFO 2024-05-13 11:34:16,833 autoreload 45103 140531152999488 Watching for file changes with StatReloader
+WARNING 2024-05-13 11:34:18,223 log 45103 140531089798720 Bad Request: /api/accounts/
+WARNING 2024-05-13 11:34:18,223 basehttp 45103 140531089798720 "POST /api/accounts/ HTTP/1.1" 400 59
+WARNING 2024-05-13 11:34:22,829 log 45103 140531089798720 Bad Request: /api/accounts/
+WARNING 2024-05-13 11:34:22,829 basehttp 45103 140531089798720 "POST /api/accounts/ HTTP/1.1" 400 25
+WARNING 2024-05-13 11:41:35,982 log 45103 140531089798720 Bad Request: /api/accounts/
+WARNING 2024-05-13 11:41:35,982 basehttp 45103 140531089798720 "POST /api/accounts/ HTTP/1.1" 400 25
+INFO 2024-05-13 11:44:26,124 autoreload 51020 140419766154304 Watching for file changes with StatReloader
+INFO 2024-05-13 11:44:27,967 basehttp 51020 140419702978112 "POST /api/login/ HTTP/1.1" 200 554

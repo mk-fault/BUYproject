@@ -170,8 +170,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication'
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        # 'rest_framework.permissions.IsAuthenticated'    # 默认权限为验证用户
-        'rest_framework.permissions.AllowAny' 
+        'rest_framework.permissions.IsAuthenticated'    # 默认权限为验证用户
+        # 'rest_framework.permissions.AllowAny' 
     ],
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',  # 匿名用户访问频率限制

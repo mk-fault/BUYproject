@@ -12,11 +12,11 @@ from .models import AccountModel
 
 # Create your views here.
 
-# 教师信息获取视图
-# GET：获取全部教师信息(仅管理员)
-# POST：添加教师(仅管理员)
+# 账户信息获取视图
+# GET：获取全部账户信息(仅管理员)
+# POST：添加账户(仅管理员)
 # PATCH：重置密码(仅管理员)(默认密码123456)
-# PUT: 重置密码(需要传入username)(教师可用，仅允许修改自己的密码)
+# PUT: 重置密码(需要传入username)(仅允许修改自己的密码)
 class AccountViewset(viewsets.ModelViewSet):
     queryset = AccountModel.objects.all().order_by('id')
     serializer_class = AccountSerializer
@@ -26,8 +26,8 @@ class AccountViewset(viewsets.ModelViewSet):
 
 
 
-# 教师失活视图
-# PATCH：失活教师(仅管理员)
+# 账户失活视图
+# PATCH：失活账户(仅管理员)
 class DeactiveAccountView(APIView):
     permission_classes = [IsAdminUser]
 
@@ -43,8 +43,8 @@ class DeactiveAccountView(APIView):
         user.save()
         return Response({'msg':'账号失活成功'},status=status.HTTP_200_OK)
 
-# 教师激活视图
-# PATCH：激活教师(仅管理员)
+# 账户激活视图
+# PATCH：激活账户(仅管理员)
 class ReactiveAccountView(APIView):
     permission_classes = [IsAdminUser]
 
