@@ -1287,3 +1287,32 @@ INFO 2024-05-17 12:27:44,648 basehttp 21446 139629266204224 "GET /api/goods HTTP
 INFO 2024-05-17 12:27:44,680 basehttp 21446 139629266204224 "GET /api/goods/ HTTP/1.1" 200 305
 INFO 2024-05-17 13:19:55,027 basehttp 21446 139629266204224 "GET /api/price HTTP/1.1" 301 0
 INFO 2024-05-17 13:19:55,060 basehttp 21446 139629266204224 "GET /api/price/ HTTP/1.1" 200 320
+INFO 2024-05-17 13:29:10,000 autoreload 7884 11940 Watching for file changes with StatReloader
+INFO 2024-05-17 13:30:37,274 autoreload 1328 244 Watching for file changes with StatReloader
+WARNING 2024-05-17 13:32:09,783 log 1328 9164 Bad Request: /api/login/
+WARNING 2024-05-17 13:32:09,786 basehttp 1328 9164 "POST /api/login/ HTTP/1.1" 400 34
+WARNING 2024-05-17 13:32:34,754 log 1328 9164 Bad Request: /api/login/
+WARNING 2024-05-17 13:32:34,755 basehttp 1328 9164 "POST /api/login/ HTTP/1.1" 400 34
+WARNING 2024-05-17 13:32:40,328 log 1328 9164 Bad Request: /api/login/
+WARNING 2024-05-17 13:32:40,330 basehttp 1328 9164 "POST /api/login/ HTTP/1.1" 400 34
+INFO 2024-05-17 13:33:50,321 autoreload 11396 3304 Watching for file changes with StatReloader
+INFO 2024-05-17 13:33:55,331 basehttp 11396 5588 "POST /api/login/ HTTP/1.1" 200 552
+INFO 2024-05-17 13:34:10,339 basehttp 11396 5588 "GET /api/accounts/ HTTP/1.1" 200 141
+INFO 2024-05-17 13:34:41,391 basehttp 11396 5588 "POST /api/accounts/ HTTP/1.1" 201 70
+INFO 2024-05-17 13:34:49,556 basehttp 11396 5588 "POST /api/accounts/ HTTP/1.1" 201 69
+INFO 2024-05-17 13:34:58,316 basehttp 11396 5588 "POST /api/accounts/ HTTP/1.1" 201 70
+INFO 2024-05-17 13:35:12,920 basehttp 11396 5588 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-17 13:35:12,974 basehttp 11396 13108 "GET /api/goods/ HTTP/1.1" 200 483
+INFO 2024-05-17 13:35:17,676 basehttp 11396 13108 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-17 13:35:17,717 basehttp 11396 3300 "GET /api/goods/ HTTP/1.1" 200 483
+INFO 2024-05-17 13:35:27,803 basehttp 11396 3300 "GET /api/price HTTP/1.1" 301 0
+WARNING 2024-05-17 13:35:27,809 log 11396 4356 Unauthorized: /api/price/
+WARNING 2024-05-17 13:35:27,810 basehttp 11396 4356 "GET /api/price/ HTTP/1.1" 401 43
+INFO 2024-05-17 13:35:32,395 basehttp 11396 4356 "GET /api/price HTTP/1.1" 301 0
+WARNING 2024-05-17 13:35:32,407 log 11396 10864 Forbidden: /api/price/
+WARNING 2024-05-17 13:35:32,408 basehttp 11396 10864 "GET /api/price/ HTTP/1.1" 403 49
+INFO 2024-05-17 13:35:43,394 basehttp 11396 10864 "POST /api/login/ HTTP/1.1" 200 553
+INFO 2024-05-17 13:35:52,743 basehttp 11396 10864 "GET /api/price HTTP/1.1" 301 0
+INFO 2024-05-17 13:35:52,761 basehttp 11396 7732 "GET /api/price/ HTTP/1.1" 200 454
+INFO 2024-05-17 18:53:05,150 autoreload 11396 3304 D:\LCH_files\Project\BUYproject\BUYproject\settings.py changed, reloading.
+INFO 2024-05-17 18:53:08,194 autoreload 7364 10056 Watching for file changes with StatReloader
