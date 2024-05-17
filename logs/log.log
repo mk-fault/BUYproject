@@ -1129,3 +1129,161 @@ WARNING 2024-05-13 11:41:35,982 log 45103 140531089798720 Bad Request: /api/acco
 WARNING 2024-05-13 11:41:35,982 basehttp 45103 140531089798720 "POST /api/accounts/ HTTP/1.1" 400 25
 INFO 2024-05-13 11:44:26,124 autoreload 51020 140419766154304 Watching for file changes with StatReloader
 INFO 2024-05-13 11:44:27,967 basehttp 51020 140419702978112 "POST /api/login/ HTTP/1.1" 200 554
+INFO 2024-05-17 12:02:24,503 autoreload 17381 139983684531264 Watching for file changes with StatReloader
+INFO 2024-05-17 12:02:30,983 basehttp 17381 139983619880512 "GET /api/accounts/ HTTP/1.1" 200 124
+INFO 2024-05-17 12:16:41,310 autoreload 20031 140673414173760 Watching for file changes with StatReloader
+INFO 2024-05-17 12:16:45,031 basehttp 20031 140673349056064 "POST /api/accounts/ HTTP/1.1" 201 69
+INFO 2024-05-17 12:16:57,528 basehttp 20031 140673349056064 "POST /api/accounts/ HTTP/1.1" 201 70
+INFO 2024-05-17 12:17:04,442 basehttp 20031 140673349056064 "POST /api/accounts/ HTTP/1.1" 201 70
+INFO 2024-05-17 12:17:19,295 basehttp 20031 140673349056064 "POST /api/login/ HTTP/1.1" 200 553
+INFO 2024-05-17 12:17:41,119 basehttp 20031 140673349056064 "GET /api/goods HTTP/1.1" 301 0
+WARNING 2024-05-17 12:17:41,126 log 20031 140673349056064 Unauthorized: /api/goods/
+WARNING 2024-05-17 12:17:41,126 basehttp 20031 140673349056064 "GET /api/goods/ HTTP/1.1" 401 43
+INFO 2024-05-17 12:17:45,981 basehttp 20031 140673349056064 "GET /api/goods HTTP/1.1" 301 0
+WARNING 2024-05-17 12:17:45,989 log 20031 140673349056064 Unauthorized: /api/goods/
+WARNING 2024-05-17 12:17:45,989 basehttp 20031 140673349056064 "GET /api/goods/ HTTP/1.1" 401 173
+INFO 2024-05-17 12:18:02,746 basehttp 20031 140673349056064 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-17 12:18:02,773 basehttp 20031 140673349056064 "GET /api/goods/ HTTP/1.1" 200 52
+INFO 2024-05-17 12:18:11,441 basehttp 20031 140673349056064 "GET /api/price HTTP/1.1" 301 0
+WARNING 2024-05-17 12:18:11,459 log 20031 140673349056064 Forbidden: /api/price/
+WARNING 2024-05-17 12:18:11,459 basehttp 20031 140673349056064 "GET /api/price/ HTTP/1.1" 403 49
+ERROR 2024-05-17 12:18:23,008 log 20031 140673349056064 Internal Server Error: /api/goods/
+Traceback (most recent call last):
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 415, in initial
+    self.check_permissions(request)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 332, in check_permissions
+    if not permission.has_permission(request, self):
+TypeError: IsRole0.has_permission() missing 1 required positional argument: 'view'
+ERROR 2024-05-17 12:18:23,009 basehttp 20031 140673349056064 "POST /api/goods/ HTTP/1.1" 500 99541
+ERROR 2024-05-17 12:21:30,874 log 20031 140673349056064 Internal Server Error: /api/goods/
+Traceback (most recent call last):
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 415, in initial
+    self.check_permissions(request)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 332, in check_permissions
+    if not permission.has_permission(request, self):
+TypeError: IsRole0.has_permission() missing 1 required positional argument: 'view'
+ERROR 2024-05-17 12:21:30,875 basehttp 20031 140673349056064 "POST /api/goods/ HTTP/1.1" 500 99894
+INFO 2024-05-17 12:23:46,841 autoreload 21446 139629330555968 Watching for file changes with StatReloader
+ERROR 2024-05-17 12:23:50,099 log 21446 139629266204224 Internal Server Error: /api/goods/
+Traceback (most recent call last):
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/mixins.py", line 19, in create
+    self.perform_create(serializer)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/mixins.py", line 24, in perform_create
+    serializer.save()
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/serializers.py", line 208, in save
+    self.instance = self.create(validated_data)
+  File "/home/mk/python/BUYproject/goods/serializers.py", line 36, in create
+    unit = UnitModel.objects.get(id=unit_data)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/db/models/query.py", line 649, in get
+    raise self.model.DoesNotExist(
+goods.models.UnitModel.DoesNotExist: UnitModel matching query does not exist.
+ERROR 2024-05-17 12:23:50,100 basehttp 21446 139629266204224 "POST /api/goods/ HTTP/1.1" 500 120725
+WARNING 2024-05-17 12:25:02,313 log 21446 139629266204224 Unauthorized: /api/unit/
+WARNING 2024-05-17 12:25:02,313 basehttp 21446 139629266204224 "GET /api/unit/ HTTP/1.1" 401 43
+WARNING 2024-05-17 12:25:20,820 log 21446 139629266204224 Forbidden: /api/unit/
+WARNING 2024-05-17 12:25:20,820 basehttp 21446 139629266204224 "GET /api/unit/ HTTP/1.1" 403 49
+INFO 2024-05-17 12:25:28,568 basehttp 21446 139629266204224 "POST /api/login/ HTTP/1.1" 200 553
+INFO 2024-05-17 12:25:37,952 basehttp 21446 139629266204224 "GET /api/unit/ HTTP/1.1" 200 52
+INFO 2024-05-17 12:25:44,161 basehttp 21446 139629266204224 "POST /api/unit/ HTTP/1.1" 201 24
+INFO 2024-05-17 12:25:49,603 basehttp 21446 139629266204224 "POST /api/unit/ HTTP/1.1" 201 21
+INFO 2024-05-17 12:25:54,598 basehttp 21446 139629266204224 "POST /api/unit/ HTTP/1.1" 201 24
+INFO 2024-05-17 12:25:59,866 basehttp 21446 139629266204224 "POST /api/unit/ HTTP/1.1" 201 21
+INFO 2024-05-17 12:26:05,499 basehttp 21446 139629266204224 "POST /api/unit/ HTTP/1.1" 201 21
+INFO 2024-05-17 12:26:31,413 basehttp 21446 139629266204224 "POST /api/goods/ HTTP/1.1" 201 253
+INFO 2024-05-17 12:26:38,628 basehttp 21446 139629266204224 "GET /api/goods HTTP/1.1" 301 0
+ERROR 2024-05-17 12:26:38,685 log 21446 139629266204224 Internal Server Error: /api/goods/
+Traceback (most recent call last):
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/mixins.py", line 43, in list
+    return self.get_paginated_response(serializer.data)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/serializers.py", line 795, in data
+    ret = super().data
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/serializers.py", line 249, in data
+    self._data = self.to_representation(self.instance)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/serializers.py", line 713, in to_representation
+    return [
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/serializers.py", line 714, in <listcomp>
+    self.child.to_representation(item) for item in iterable
+  File "/home/mk/python/BUYproject/goods/serializers.py", line 46, in to_representation
+    data['price'] = instance.prices.filter(status=True).first().price
+AttributeError: 'NoneType' object has no attribute 'price'
+ERROR 2024-05-17 12:26:38,686 basehttp 21446 139629266204224 "GET /api/goods/ HTTP/1.1" 500 119636
+INFO 2024-05-17 12:26:57,565 basehttp 21446 139629266204224 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-17 12:26:57,597 basehttp 21446 139629266204224 "GET /api/goods/ HTTP/1.1" 200 305
+INFO 2024-05-17 12:27:04,332 basehttp 21446 139629266204224 "GET /api/price HTTP/1.1" 301 0
+WARNING 2024-05-17 12:27:04,356 log 21446 139629266204224 Forbidden: /api/price/
+WARNING 2024-05-17 12:27:04,356 basehttp 21446 139629266204224 "GET /api/price/ HTTP/1.1" 403 49
+INFO 2024-05-17 12:27:08,866 basehttp 21446 139629266204224 "GET /api/price HTTP/1.1" 301 0
+INFO 2024-05-17 12:27:08,893 basehttp 21446 139629266204224 "GET /api/price/ HTTP/1.1" 200 185
+WARNING 2024-05-17 12:27:35,172 log 21446 139629266204224 Unauthorized: /api/price/
+WARNING 2024-05-17 12:27:35,172 basehttp 21446 139629266204224 "POST /api/price/ HTTP/1.1" 401 43
+INFO 2024-05-17 12:27:40,827 basehttp 21446 139629266204224 "POST /api/price/ HTTP/1.1" 201 133
+INFO 2024-05-17 12:27:44,648 basehttp 21446 139629266204224 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-17 12:27:44,680 basehttp 21446 139629266204224 "GET /api/goods/ HTTP/1.1" 200 305
+INFO 2024-05-17 13:19:55,027 basehttp 21446 139629266204224 "GET /api/price HTTP/1.1" 301 0
+INFO 2024-05-17 13:19:55,060 basehttp 21446 139629266204224 "GET /api/price/ HTTP/1.1" 200 320

@@ -1,0 +1,8 @@
+django
+coreapi
+django-cleanup
+django-filter
+django-redis
+djangorestframework
+djangorestframework-simplejwt
+pillow

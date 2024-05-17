@@ -14,11 +14,12 @@ from .permissions import *
 class GoodsViewSet(viewsets.ModelViewSet):
     queryset = GoodsModel.objects.all()
     serializer_class = GoodsModelSerializer
+    pagination_class = GoodsPagination
 
     def get_permissions(self):
-        if self.action == 'list':
+        if self.action == 'list' or self.action == 'retrieve':
             return [permissions.IsAuthenticated()]
-        elif self.action == 'create':
+        elif self.action == 'destroy' or self.action == 'update' or self.action == 'partial_update':
             return [IsRole0]
         
         return super().get_permissions()
@@ -38,6 +39,6 @@ class PriceViewSet(viewsets.ModelViewSet):
 class UnitViewSet(viewsets.ModelViewSet):
     queryset = UnitModel.objects.all()
     serializer_class = UnitModelSerializer
-    permission_classes = [IsRole0 | IsRole1]
+    permission_classes = [IsRole0]
 
 
