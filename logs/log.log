@@ -1331,3 +1331,324 @@ INFO 2024-05-17 18:23:30,677 basehttp 39198 140335595386432 "GET /api/goods?page
 INFO 2024-05-17 18:23:30,710 basehttp 39198 140335595386432 "GET /api/goods/?page_size=1 HTTP/1.1" 200 354
 INFO 2024-05-17 18:23:42,864 basehttp 39198 140335595386432 "GET /api/goods HTTP/1.1" 301 0
 INFO 2024-05-17 18:23:42,902 basehttp 39198 140335595386432 "GET /api/goods/ HTTP/1.1" 200 558
+INFO 2024-05-20 10:07:57,826 autoreload 5320 139970449945664 Watching for file changes with StatReloader
+INFO 2024-05-20 10:08:16,104 basehttp 5320 139970384754240 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-20 10:08:16,171 basehttp 5320 139970384754240 "GET /api/goods/ HTTP/1.1" 200 558
+INFO 2024-05-20 10:08:54,472 basehttp 5320 139970384754240 "GET /api/price HTTP/1.1" 301 0
+INFO 2024-05-20 10:08:54,495 basehttp 5320 139970384754240 "GET /api/price/ HTTP/1.1" 200 454
+INFO 2024-05-20 10:12:42,294 autoreload 7423 140443053061184 Watching for file changes with StatReloader
+INFO 2024-05-20 10:12:44,651 basehttp 7423 140442988443200 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-20 10:12:44,691 basehttp 7423 140442988443200 "GET /api/goods/ HTTP/1.1" 200 558
+INFO 2024-05-20 10:12:50,710 autoreload 7423 140443053061184 /home/mk/python/BUYproject/goods/views.py changed, reloading.
+INFO 2024-05-20 10:12:51,072 autoreload 7531 140695348954176 Watching for file changes with StatReloader
+INFO 2024-05-20 10:12:53,145 basehttp 7531 140695209768512 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-20 10:12:53,193 basehttp 7531 140695209768512 "GET /api/goods/ HTTP/1.1" 200 558
+INFO 2024-05-20 10:12:55,361 basehttp 7531 140695209768512 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-20 10:12:55,398 basehttp 7531 140695209768512 "GET /api/goods/ HTTP/1.1" 200 558
+INFO 2024-05-20 10:13:15,888 basehttp 7531 140695209768512 "GET /api/goods?page_size=1 HTTP/1.1" 301 0
+INFO 2024-05-20 10:13:15,923 basehttp 7531 140695209768512 "GET /api/goods/?page_size=1 HTTP/1.1" 200 558
+INFO 2024-05-20 10:13:22,898 basehttp 7531 140695209768512 "GET /api/goods?page=2 HTTP/1.1" 301 0
+WARNING 2024-05-20 10:13:22,918 log 7531 140695209768512 Not Found: /api/goods/
+WARNING 2024-05-20 10:13:22,918 basehttp 7531 140695209768512 "GET /api/goods/?page=2 HTTP/1.1" 404 28
+INFO 2024-05-20 10:13:26,501 basehttp 7531 140695209768512 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-20 10:13:26,540 basehttp 7531 140695209768512 "GET /api/goods/ HTTP/1.1" 200 558
+INFO 2024-05-20 10:13:41,883 basehttp 7531 140695209768512 "GET /api/unit HTTP/1.1" 301 0
+WARNING 2024-05-20 10:13:41,890 log 7531 140695209768512 Unauthorized: /api/unit/
+WARNING 2024-05-20 10:13:41,891 basehttp 7531 140695209768512 "GET /api/unit/ HTTP/1.1" 401 43
+INFO 2024-05-20 10:13:53,355 basehttp 7531 140695209768512 "GET /api/unit HTTP/1.1" 301 0
+WARNING 2024-05-20 10:13:53,371 log 7531 140695209768512 Forbidden: /api/unit/
+WARNING 2024-05-20 10:13:53,371 basehttp 7531 140695209768512 "GET /api/unit/ HTTP/1.1" 403 49
+INFO 2024-05-20 10:14:05,624 basehttp 7531 140695209768512 "POST /api/login/ HTTP/1.1" 200 553
+INFO 2024-05-20 10:14:15,238 basehttp 7531 140695209768512 "GET /api/unit HTTP/1.1" 301 0
+INFO 2024-05-20 10:14:15,258 basehttp 7531 140695209768512 "GET /api/unit/ HTTP/1.1" 200 167
+INFO 2024-05-20 10:14:28,733 autoreload 7531 140695348954176 /home/mk/python/BUYproject/goods/views.py changed, reloading.
+INFO 2024-05-20 10:14:29,120 autoreload 8323 140557371425856 Watching for file changes with StatReloader
+INFO 2024-05-20 10:22:39,330 autoreload 8323 140557371425856 /home/mk/python/BUYproject/goods/views.py changed, reloading.
+INFO 2024-05-20 10:22:39,741 autoreload 11729 139726519469120 Watching for file changes with StatReloader
+INFO 2024-05-20 10:22:43,031 autoreload 11729 139726519469120 /home/mk/python/BUYproject/goods/views.py changed, reloading.
+INFO 2024-05-20 10:22:43,521 autoreload 11779 140369633694784 Watching for file changes with StatReloader
+INFO 2024-05-20 10:22:48,156 basehttp 11779 140369569248832 "GET /api/unit HTTP/1.1" 301 0
+INFO 2024-05-20 10:22:48,180 basehttp 11779 140369569248832 "GET /api/unit/ HTTP/1.1" 200 167
+INFO 2024-05-20 10:22:51,303 basehttp 11779 140369569248832 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-20 10:22:51,340 basehttp 11779 140369569248832 "GET /api/goods/ HTTP/1.1" 200 558
+INFO 2024-05-20 10:23:14,236 autoreload 11779 140369633694784 /home/mk/python/BUYproject/goods/views.py changed, reloading.
+INFO 2024-05-20 10:23:14,654 autoreload 12070 140514341131328 Watching for file changes with StatReloader
+INFO 2024-05-20 10:23:28,339 autoreload 12222 140373399565376 Watching for file changes with StatReloader
+INFO 2024-05-20 10:23:30,386 basehttp 12222 140373334685248 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-20 10:23:30,431 basehttp 12222 140373334685248 "GET /api/goods/ HTTP/1.1" 200 558
+INFO 2024-05-20 10:23:33,454 basehttp 12222 140373334685248 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-20 10:23:33,484 basehttp 12222 140373334685248 "GET /api/goods/ HTTP/1.1" 200 558
+INFO 2024-05-20 10:24:44,432 autoreload 12846 140395806213184 Watching for file changes with StatReloader
+INFO 2024-05-20 10:24:47,171 basehttp 12846 140395741705792 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-20 10:24:47,211 basehttp 12846 140395741705792 "GET /api/goods/ HTTP/1.1" 200 558
+INFO 2024-05-20 10:24:48,806 basehttp 12846 140395741705792 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-20 10:24:48,840 basehttp 12846 140395741705792 "GET /api/goods/ HTTP/1.1" 200 558
+INFO 2024-05-20 10:25:20,224 autoreload 12846 140395806213184 /home/mk/python/BUYproject/goods/serializers.py changed, reloading.
+INFO 2024-05-20 10:25:20,608 autoreload 13159 140153302385728 Watching for file changes with StatReloader
+INFO 2024-05-20 10:25:24,159 basehttp 13159 140153170425408 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-20 10:25:24,190 basehttp 13159 140153170425408 "GET /api/goods/ HTTP/1.1" 200 339
+INFO 2024-05-20 10:25:29,038 autoreload 13159 140153302385728 /home/mk/python/BUYproject/goods/serializers.py changed, reloading.
+INFO 2024-05-20 10:25:29,564 autoreload 13272 139810884678720 Watching for file changes with StatReloader
+INFO 2024-05-20 10:25:32,062 basehttp 13272 139810819798592 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-20 10:25:32,108 basehttp 13272 139810819798592 "GET /api/goods/ HTTP/1.1" 200 558
+INFO 2024-05-20 10:29:24,106 autoreload 15014 140578382648384 Watching for file changes with StatReloader
+INFO 2024-05-20 10:29:27,451 basehttp 15014 140578317661760 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-20 10:29:27,492 basehttp 15014 140578317661760 "GET /api/goods/ HTTP/1.1" 200 558
+INFO 2024-05-20 10:29:29,049 basehttp 15014 140578317661760 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-20 10:29:29,077 basehttp 15014 140578317661760 "GET /api/goods/ HTTP/1.1" 200 558
+INFO 2024-05-20 10:33:19,805 autoreload 16726 139844065444928 Watching for file changes with StatReloader
+INFO 2024-05-20 10:33:22,256 basehttp 16726 139843933828672 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-20 10:33:22,300 basehttp 16726 139843933828672 "GET /api/goods/ HTTP/1.1" 200 583
+INFO 2024-05-20 10:34:00,641 basehttp 16726 139843933828672 "GET /api/price HTTP/1.1" 301 0
+INFO 2024-05-20 10:34:00,666 basehttp 16726 139843933828672 "GET /api/price/ HTTP/1.1" 200 454
+INFO 2024-05-20 10:34:03,627 basehttp 16726 139843933828672 "GET /api/unit HTTP/1.1" 301 0
+INFO 2024-05-20 10:34:03,649 basehttp 16726 139843933828672 "GET /api/unit/ HTTP/1.1" 200 167
+INFO 2024-05-20 10:34:20,899 autoreload 16726 139844065444928 /home/mk/python/BUYproject/goods/views.py changed, reloading.
+INFO 2024-05-20 10:34:21,337 autoreload 17266 140209333437504 Watching for file changes with StatReloader
+INFO 2024-05-20 10:34:25,150 basehttp 17266 140209200035392 "GET /api/price HTTP/1.1" 301 0
+INFO 2024-05-20 10:34:25,178 basehttp 17266 140209200035392 "GET /api/price/ HTTP/1.1" 200 424
+INFO 2024-05-20 10:35:02,188 autoreload 17266 140209333437504 /home/mk/python/BUYproject/goods/pagination.py changed, reloading.
+INFO 2024-05-20 10:35:02,622 autoreload 17596 140400866321472 Watching for file changes with StatReloader
+INFO 2024-05-20 10:35:07,968 autoreload 17596 140400866321472 /home/mk/python/BUYproject/goods/views.py changed, reloading.
+INFO 2024-05-20 10:35:08,363 autoreload 17664 140684336751680 Watching for file changes with StatReloader
+INFO 2024-05-20 10:35:11,662 autoreload 17664 140684336751680 /home/mk/python/BUYproject/goods/views.py changed, reloading.
+INFO 2024-05-20 10:35:12,095 autoreload 17714 140654654551104 Watching for file changes with StatReloader
+INFO 2024-05-20 10:35:13,223 autoreload 17714 140654654551104 /home/mk/python/BUYproject/goods/views.py changed, reloading.
+INFO 2024-05-20 10:35:13,606 autoreload 17728 139671788524608 Watching for file changes with StatReloader
+INFO 2024-05-20 10:35:25,877 autoreload 17728 139671788524608 /home/mk/python/BUYproject/goods/views.py changed, reloading.
+INFO 2024-05-20 10:35:26,289 autoreload 17855 139836830913600 Watching for file changes with StatReloader
+INFO 2024-05-20 10:35:27,428 autoreload 17855 139836830913600 /home/mk/python/BUYproject/goods/views.py changed, reloading.
+INFO 2024-05-20 10:35:27,805 autoreload 17875 139928407364672 Watching for file changes with StatReloader
+INFO 2024-05-20 10:37:33,993 autoreload 18814 140681113773120 Watching for file changes with StatReloader
+INFO 2024-05-20 10:37:35,862 basehttp 18814 140680981640768 "GET /api/price HTTP/1.1" 301 0
+INFO 2024-05-20 10:37:35,891 basehttp 18814 140680981640768 "GET /api/price/ HTTP/1.1" 200 474
+INFO 2024-05-20 10:37:52,280 basehttp 18814 140680981640768 "GET /api/price?page_size=1 HTTP/1.1" 301 0
+INFO 2024-05-20 10:37:52,301 basehttp 18814 140680981640768 "GET /api/price/?page_size=1 HTTP/1.1" 200 255
+INFO 2024-05-20 10:37:58,098 basehttp 18814 140680981640768 "GET /api/price?page_size=1&page=2 HTTP/1.1" 301 0
+INFO 2024-05-20 10:37:58,121 basehttp 18814 140680981640768 "GET /api/price/?page_size=1&page=2 HTTP/1.1" 200 296
+INFO 2024-05-20 11:32:21,113 autoreload 18814 140681113773120 /home/mk/python/BUYproject/goods/models.py changed, reloading.
+INFO 2024-05-20 11:32:21,520 autoreload 41436 140097333449792 Watching for file changes with StatReloader
+INFO 2024-05-20 11:39:38,655 autoreload 44696 139785582203968 Watching for file changes with StatReloader
+INFO 2024-05-20 11:39:59,736 basehttp 44696 139785517659712 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-20 11:39:59,791 basehttp 44696 139785517659712 "GET /api/goods/ HTTP/1.1" 200 578
+ERROR 2024-05-20 11:40:27,042 log 44696 139785517659712 Internal Server Error: /api/goods/2/
+Traceback (most recent call last):
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 497, in dispatch
+    self.initial(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 415, in initial
+    self.check_permissions(request)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 332, in check_permissions
+    if not permission.has_permission(request, self):
+TypeError: IsRole0.has_permission() missing 1 required positional argument: 'view'
+ERROR 2024-05-20 11:40:27,043 basehttp 44696 139785517659712 "DELETE /api/goods/2/ HTTP/1.1" 500 99217
+INFO 2024-05-20 11:42:43,430 autoreload 44696 139785582203968 /home/mk/python/BUYproject/goods/views.py changed, reloading.
+INFO 2024-05-20 11:42:43,865 autoreload 46048 140215643706432 Watching for file changes with StatReloader
+INFO 2024-05-20 11:42:44,989 autoreload 46048 140215643706432 /home/mk/python/BUYproject/goods/views.py changed, reloading.
+INFO 2024-05-20 11:42:45,391 autoreload 46072 140090429908032 Watching for file changes with StatReloader
+WARNING 2024-05-20 11:42:48,699 log 46072 140090290468416 Forbidden: /api/goods/2/
+WARNING 2024-05-20 11:42:48,701 basehttp 46072 140090290468416 "DELETE /api/goods/2/ HTTP/1.1" 403 49
+INFO 2024-05-20 11:43:06,264 basehttp 46072 140090290468416 "DELETE /api/goods/2/ HTTP/1.1" 204 0
+INFO 2024-05-20 11:43:29,700 basehttp 46072 140090290468416 "DELETE /api/goods/3/ HTTP/1.1" 204 0
+INFO 2024-05-20 11:50:42,076 autoreload 49733 140131801388096 Watching for file changes with StatReloader
+INFO 2024-05-20 11:52:03,028 autoreload 50378 139971811767360 Watching for file changes with StatReloader
+WARNING 2024-05-20 11:52:18,734 log 50378 139971746854464 Unauthorized: /api/category/
+WARNING 2024-05-20 11:52:18,734 basehttp 50378 139971746854464 "POST /api/category/ HTTP/1.1" 401 43
+WARNING 2024-05-20 11:52:23,628 log 50378 139971746854464 Unauthorized: /api/category/
+WARNING 2024-05-20 11:52:23,628 basehttp 50378 139971746854464 "POST /api/category/ HTTP/1.1" 401 43
+INFO 2024-05-20 11:52:33,425 basehttp 50378 139971746854464 "POST /api/category/ HTTP/1.1" 201 24
+INFO 2024-05-20 11:52:40,384 basehttp 50378 139971746854464 "POST /api/category/ HTTP/1.1" 201 27
+INFO 2024-05-20 11:52:45,788 basehttp 50378 139971746854464 "POST /api/category/ HTTP/1.1" 201 27
+INFO 2024-05-20 11:53:36,810 autoreload 51114 139631057028160 Watching for file changes with StatReloader
+INFO 2024-05-20 11:53:47,145 basehttp 51114 139630924002880 "POST /api/category/ HTTP/1.1" 201 65
+WARNING 2024-05-20 11:55:15,431 log 51114 139630924002880 Bad Request: /api/goods/
+WARNING 2024-05-20 11:55:15,432 basehttp 51114 139630924002880 "POST /api/goods/ HTTP/1.1" 400 41
+INFO 2024-05-20 11:55:27,906 basehttp 51114 139630924002880 "POST /api/goods/ HTTP/1.1" 201 265
+INFO 2024-05-20 11:55:34,554 basehttp 51114 139630924002880 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-20 11:55:34,586 basehttp 51114 139630924002880 "GET /api/goods/ HTTP/1.1" 200 337
+INFO 2024-05-20 11:57:30,965 autoreload 52861 140374773994560 Watching for file changes with StatReloader
+INFO 2024-05-20 11:57:33,273 basehttp 52861 140374709368384 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-20 11:57:33,313 basehttp 52861 140374709368384 "GET /api/goods/ HTTP/1.1" 200 347
+WARNING 2024-05-20 11:59:10,629 log 52861 140374709368384 Unauthorized: /api/category/
+WARNING 2024-05-20 11:59:10,630 basehttp 52861 140374709368384 "GET /api/category/ HTTP/1.1" 401 43
+INFO 2024-05-20 11:59:49,764 basehttp 52861 140374709368384 "GET /api/category/ HTTP/1.1" 200 180
+INFO 2024-05-20 12:00:55,466 basehttp 52861 140374709368384 "GET /api/unit HTTP/1.1" 301 0
+INFO 2024-05-20 12:00:55,488 basehttp 52861 140374709368384 "GET /api/unit/ HTTP/1.1" 200 187
+WARNING 2024-05-20 12:06:05,968 log 52861 140374709368384 Bad Request: /api/goods/
+WARNING 2024-05-20 12:06:05,968 basehttp 52861 140374709368384 "POST /api/goods/ HTTP/1.1" 400 60
+ERROR 2024-05-20 12:06:13,425 log 52861 140374709368384 Internal Server Error: /api/goods/
+Traceback (most recent call last):
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/mixins.py", line 19, in create
+    self.perform_create(serializer)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/mixins.py", line 24, in perform_create
+    serializer.save()
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/serializers.py", line 208, in save
+    self.instance = self.create(validated_data)
+  File "/home/mk/python/BUYproject/goods/serializers.py", line 41, in create
+    unit = UnitModel.objects.get(id=unit_data)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/db/models/query.py", line 649, in get
+    raise self.model.DoesNotExist(
+goods.models.UnitModel.DoesNotExist: UnitModel matching query does not exist.
+ERROR 2024-05-20 12:06:13,426 basehttp 52861 140374709368384 "POST /api/goods/ HTTP/1.1" 500 121920
+INFO 2024-05-20 12:06:48,269 autoreload 52861 140374773994560 /home/mk/python/BUYproject/goods/serializers.py changed, reloading.
+INFO 2024-05-20 12:06:48,697 autoreload 56777 139691194520640 Watching for file changes with StatReloader
+INFO 2024-05-20 12:08:57,425 autoreload 57756 140695470515264 Watching for file changes with StatReloader
+WARNING 2024-05-20 12:08:59,314 log 57756 140695337694784 Bad Request: /api/goods/
+WARNING 2024-05-20 12:08:59,314 basehttp 57756 140695337694784 "POST /api/goods/ HTTP/1.1" 400 31
+INFO 2024-05-20 12:09:28,169 autoreload 57756 140695470515264 /home/mk/python/BUYproject/goods/serializers.py changed, reloading.
+INFO 2024-05-20 12:09:28,572 autoreload 58015 140271962727488 Watching for file changes with StatReloader
+INFO 2024-05-20 12:09:29,732 autoreload 58015 140271962727488 /home/mk/python/BUYproject/goods/serializers.py changed, reloading.
+INFO 2024-05-20 12:09:30,165 autoreload 58042 140463171216448 Watching for file changes with StatReloader
+INFO 2024-05-20 12:16:02,859 autoreload 60823 139865493812288 Watching for file changes with StatReloader
+WARNING 2024-05-20 12:16:06,030 log 60823 139865428588096 Bad Request: /api/goods/
+WARNING 2024-05-20 12:16:06,031 basehttp 60823 139865428588096 "POST /api/goods/ HTTP/1.1" 400 39
+INFO 2024-05-20 12:17:42,175 autoreload 61585 140412001772608 Watching for file changes with StatReloader
+WARNING 2024-05-20 12:17:44,380 log 61585 140411868804672 Bad Request: /api/goods/
+WARNING 2024-05-20 12:17:44,381 basehttp 61585 140411868804672 "POST /api/goods/ HTTP/1.1" 400 50
+INFO 2024-05-20 12:19:29,498 autoreload 62402 139768683537472 Watching for file changes with StatReloader
+INFO 2024-05-20 12:19:37,352 basehttp 62402 139768618808896 "GET /api/goods HTTP/1.1" 301 0
+ERROR 2024-05-20 12:19:37,433 log 62402 139768618808896 Internal Server Error: /api/goods/
+Traceback (most recent call last):
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/mixins.py", line 43, in list
+    return self.get_paginated_response(serializer.data)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/serializers.py", line 795, in data
+    ret = super().data
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/serializers.py", line 249, in data
+    self._data = self.to_representation(self.instance)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/serializers.py", line 713, in to_representation
+    return [
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/serializers.py", line 714, in <listcomp>
+    self.child.to_representation(item) for item in iterable
+  File "/home/mk/python/BUYproject/goods/serializers.py", line 54, in to_representation
+    data['price'] = instance.prices.filter(status=True).first().price
+AttributeError: 'NoneType' object has no attribute 'price'
+ERROR 2024-05-20 12:19:37,435 basehttp 62402 139768618808896 "GET /api/goods/ HTTP/1.1" 500 122179
+INFO 2024-05-20 12:20:01,819 basehttp 62402 139768618808896 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-20 12:20:01,846 basehttp 62402 139768618808896 "GET /api/goods/ HTTP/1.1" 200 347
+INFO 2024-05-20 12:21:06,177 autoreload 63201 140170791449664 Watching for file changes with StatReloader
+INFO 2024-05-20 12:21:08,395 basehttp 63201 140170726733376 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-20 12:21:08,432 basehttp 63201 140170726733376 "GET /api/goods/ HTTP/1.1" 200 358
+INFO 2024-05-20 12:22:12,710 autoreload 63745 139887106384960 Watching for file changes with StatReloader
+INFO 2024-05-20 12:22:16,352 basehttp 63745 139887041836608 "GET /api/goods HTTP/1.1" 301 0
+INFO 2024-05-20 12:22:16,394 basehttp 63745 139887041836608 "GET /api/goods/ HTTP/1.1" 200 358
+WARNING 2024-05-20 12:22:19,090 log 63745 139887041836608 Bad Request: /api/goods/
+WARNING 2024-05-20 12:22:19,090 basehttp 63745 139887041836608 "POST /api/goods/ HTTP/1.1" 400 50
+WARNING 2024-05-20 12:22:30,846 log 63745 139887041836608 Bad Request: /api/goods/
+WARNING 2024-05-20 12:22:30,846 basehttp 63745 139887041836608 "POST /api/goods/ HTTP/1.1" 400 56
+WARNING 2024-05-20 12:22:40,888 log 63745 139887041836608 Bad Request: /api/goods/
+WARNING 2024-05-20 12:22:40,889 basehttp 63745 139887041836608 "POST /api/goods/ HTTP/1.1" 400 50
+ERROR 2024-05-20 12:22:45,540 log 63745 139887041836608 Internal Server Error: /api/goods/
+Traceback (most recent call last):
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/mixins.py", line 20, in create
+    headers = self.get_success_headers(serializer.data)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/serializers.py", line 571, in data
+    ret = super().data
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/serializers.py", line 249, in data
+    self._data = self.to_representation(self.instance)
+  File "/home/mk/python/BUYproject/goods/serializers.py", line 57, in to_representation
+    data['category'] = instance.category.name
+AttributeError: 'NoneType' object has no attribute 'name'
+ERROR 2024-05-20 12:22:45,542 basehttp 63745 139887041836608 "POST /api/goods/ HTTP/1.1" 500 112188
+INFO 2024-05-20 12:23:24,355 basehttp 63745 139887041836608 "DELETE /api/goods/9/ HTTP/1.1" 204 0
+INFO 2024-05-20 12:24:30,685 autoreload 64819 139788819051584 Watching for file changes with StatReloader
+ERROR 2024-05-20 12:24:36,175 log 64819 139788754613824 Internal Server Error: /api/goods/
+Traceback (most recent call last):
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/mixins.py", line 20, in create
+    headers = self.get_success_headers(serializer.data)
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/serializers.py", line 571, in data
+    ret = super().data
+  File "/home/mk/anaconda3/envs/buyweb/lib/python3.10/site-packages/rest_framework/serializers.py", line 249, in data
+    self._data = self.to_representation(self.instance)
+  File "/home/mk/python/BUYproject/goods/serializers.py", line 62, in to_representation
+    data['category'] = instance.category.name
+AttributeError: 'NoneType' object has no attribute 'name'
+ERROR 2024-05-20 12:24:36,177 basehttp 64819 139788754613824 "POST /api/goods/ HTTP/1.1" 500 112186
+INFO 2024-05-20 12:24:52,783 basehttp 64819 139788754613824 "DELETE /api/goods/10/ HTTP/1.1" 204 0
+INFO 2024-05-20 12:26:21,433 autoreload 64819 139788819051584 /home/mk/python/BUYproject/goods/models.py changed, reloading.
+INFO 2024-05-20 12:26:21,836 autoreload 65632 140228269462592 Watching for file changes with StatReloader
+INFO 2024-05-20 12:26:40,240 autoreload 65839 140397626360896 Watching for file changes with StatReloader
+WARNING 2024-05-20 12:26:46,744 log 65839 140397562033728 Bad Request: /api/goods/
+WARNING 2024-05-20 12:26:46,744 basehttp 65839 140397562033728 "POST /api/goods/ HTTP/1.1" 400 62
+INFO 2024-05-20 12:26:57,800 autoreload 65839 140397626360896 /home/mk/python/BUYproject/goods/serializers.py changed, reloading.
+INFO 2024-05-20 12:26:58,292 autoreload 66016 140149163435072 Watching for file changes with StatReloader
+WARNING 2024-05-20 12:26:59,719 log 66016 140149098804800 Bad Request: /api/goods/
+WARNING 2024-05-20 12:26:59,719 basehttp 66016 140149098804800 "POST /api/goods/ HTTP/1.1" 400 62

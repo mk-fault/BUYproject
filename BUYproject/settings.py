@@ -162,7 +162,7 @@ CACHES = {
 
 # restframework配置
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS': 'goods.pagination.GoodsPagination',
     'PAGE_SIZE': 10,
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',  # 使用rest_framework_simplejwt验证身份
@@ -184,7 +184,7 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.OrderingFilter',
         ], # 过滤器
-    # 'EXCEPTION_HANDLER':'rest_framework.views.exception_handler'
+    'EXCEPTION_HANDLER':'goods.exception_handlers.custom_exception_handler'
     # 'EXCEPTION_HANDLER':'app01.exception.my_exception_handler'
 
 }
