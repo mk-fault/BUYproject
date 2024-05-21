@@ -6,7 +6,7 @@ class CustomResponse(Response):
         custom_data = {
             "msg": msg,
             "data": data,
-            "status_code": status
+            "code": status
         }
         super().__init__(data=custom_data, status=status, template_name=template_name, headers=headers, exception=exception, content_type=content_type)
 
