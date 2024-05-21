@@ -5,10 +5,12 @@ from rest_framework import permissions
 from rest_framework import status
 from rest_framework.response import Response
 
-from .models import GoodsModel, PriceModel, UnitModel
-from .serializers import GoodsModelSerializer, PriceModelSerializer, UnitModelSerializer
+from .models import GoodsModel, PriceModel, UnitModel, CategoryModel
+from .serializers import GoodsModelSerializer, PriceModelSerializer, UnitModelSerializer, CategorySerializer
 from .pagination import GoodsPagination
 from .permissions import *
+from utils.response import CustomModelViewSet
+
 
 # 商品视图集
 class GoodsViewSet(viewsets.ModelViewSet):
@@ -20,7 +22,7 @@ class GoodsViewSet(viewsets.ModelViewSet):
         if self.action == 'list' or self.action == 'retrieve':
             return [permissions.IsAuthenticated()]
         elif self.action == 'destroy' or self.action == 'update' or self.action == 'partial_update':
-            return [IsRole0]
+            return [IsRole0()]
         
         return super().get_permissions()
 
@@ -41,4 +43,8 @@ class UnitViewSet(viewsets.ModelViewSet):
     serializer_class = UnitModelSerializer
     permission_classes = [IsRole0]
 
+class CategoryViewSet(CustomModelViewSet):
+    queryset = CategoryModel.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [IsRole0]
 

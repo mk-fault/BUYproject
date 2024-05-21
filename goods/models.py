@@ -2,8 +2,17 @@ from django.db import models
 
 # Create your models here.
 
+class CategoryModel(models.Model):
+    name = models.CharField(max_length=100, verbose_name="类别名")
+
+    class Meta:
+        db_table = 'category'
+        verbose_name = '类别'
+        verbose_name_plural = verbose_name
+
 class GoodsModel(models.Model):
     name = models.CharField(max_length=100, verbose_name='商品名称')
+    category = models.ForeignKey(CategoryModel, on_delete=models.CASCADE, verbose_name='商品类别')
     image = models.ImageField(upload_to='goods/', verbose_name='商品图片')
     description = models.TextField(verbose_name='商品描述')
     create_at = models.DateTimeField(auto_now_add=True, verbose_name='添加时间')
