@@ -1666,3 +1666,9 @@ INFO 2024-05-20 14:58:51,129 autoreload 4824 140226362819648 /home/mk/python/BUY
 INFO 2024-05-20 14:58:51,558 autoreload 7283 140265367295040 Watching for file changes with StatReloader
 INFO 2024-05-20 14:59:22,434 autoreload 7563 140646172890176 Watching for file changes with StatReloader
 INFO 2024-05-20 14:59:26,622 basehttp 7563 140646108100160 "POST /api/accounts/ HTTP/1.1" 201 109
+INFO 2024-05-21 10:27:39,697 autoreload 30821 140081688933440 Watching for file changes with StatReloader
+INFO 2024-05-21 10:27:44,530 basehttp 30821 140081556878912 "POST /api/login/ HTTP/1.1" 200 553
+INFO 2024-05-21 10:29:51,260 autoreload 31846 139710418826304 Watching for file changes with StatReloader
+INFO 2024-05-21 10:29:54,335 basehttp 31846 139710353634880 "POST /api/login/ HTTP/1.1" 200 600
+WARNING 2024-05-21 10:30:04,288 log 31846 139710353634880 Bad Request: /api/login/
+WARNING 2024-05-21 10:30:04,288 basehttp 31846 139710353634880 "POST /api/login/ HTTP/1.1" 400 57
