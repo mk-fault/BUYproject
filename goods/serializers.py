@@ -3,7 +3,7 @@ import datetime
 from .models import GoodsModel, PriceModel, UnitModel, CategoryModel
 
 class PriceModelSerializer(serializers.ModelSerializer):
-    # status = serializers.BooleanField(default=True)
+    status = serializers.BooleanField(default=True)
     class Meta:
         model = PriceModel
         fields = ['price', 'start_time', 'end_time', 'status', 'product', 'unit']
@@ -55,9 +55,12 @@ class GoodsModelSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         # 编辑返回的数据
         data = super().to_representation(instance)
-        data['price'] = instance.prices.filter(status=True).first().price
-        data['start_time'] = instance.prices.filter(status=True).first().start_time
-        data['end_time'] = instance.prices.filter(status=True).first().end_time
-        data['unit'] = instance.prices.filter(status=True).first().unit.name
-        data['category'] = instance.category.name
+        try:
+            data['price'] = instance.prices.filter(status=True).first().price
+            data['start_time'] = instance.prices.filter(status=True).first().start_time
+            data['end_time'] = instance.prices.filter(status=True).first().end_time
+            data['unit'] = instance.prices.filter(status=True).first().unit.name
+            data['category'] = instance.category.name
+        except:
+            raise serializers.ValidationError("获取商品失败")
         return data
