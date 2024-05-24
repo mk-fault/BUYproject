@@ -6,7 +6,7 @@ class PriceModelSerializer(serializers.ModelSerializer):
     status = serializers.BooleanField(default=False)
     class Meta:
         model = PriceModel
-        fields = ['price', 'start_time', 'end_time', 'status', 'product', 'unit']
+        fields = ['price', 'start_time', 'end_time', 'status', 'product']
 
 class UnitModelSerializer(serializers.ModelSerializer):
     class Meta:
@@ -20,11 +20,11 @@ class CategoryModelSerializer(serializers.ModelSerializer):
 
 class GoodsModelSerializer(serializers.ModelSerializer):
     price = serializers.DecimalField(max_digits=10, decimal_places=2, write_only=True)  # 添加一个价格字段
-    unit = serializers.IntegerField(write_only=True)  # 添加一个单位字段
+    status = serializers.BooleanField(default=True)
 
     class Meta:
         model = GoodsModel
-        fields = ['id', 'name', 'image', 'description', 'price', 'unit', 'category']
+        fields = ['id', 'name', 'image', 'description', 'price', 'unit', 'category','status']
         # extra_kwargs = {
         #     'category':{
         #         'required':True
@@ -34,21 +34,17 @@ class GoodsModelSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         # 获取传入的价格数据
         price_data = validated_data.pop('price')
-        unit_data = validated_data.pop('unit')
+
         # 获取当前时间和结束时间
         start_time = datetime.datetime.now()
         end_time = start_time + datetime.timedelta(days=30)
 
-        # 创建单位对象
-        try:
-            unit = UnitModel.objects.get(id=unit_data)
-        except:
-            raise serializers.ValidationError("计量单位对象不存在")
-
         # 创建商品对象
         product = GoodsModel.objects.create(**validated_data)
+
         # 创建关联的价格对象
-        price = PriceModel.objects.create(product=product, start_time=start_time, end_time=end_time, price=price_data, unit=unit)
+        price = PriceModel.objects.create(product=product, start_time=start_time, end_time=end_time, price=price_data)
+
         # 创建关联的价格请求对象
         PriceRequestModel.objects.create(product=product, price=price)
 
@@ -61,14 +57,14 @@ class GoodsModelSerializer(serializers.ModelSerializer):
             data['price'] = instance.prices.filter(status=True).first().price
             data['start_time'] = instance.prices.filter(status=True).first().start_time
             data['end_time'] = instance.prices.filter(status=True).first().end_time
-            data['unit'] = instance.prices.filter(status=True).first().unit.name
+            data['unit'] = instance.unit.name
             data['category'] = instance.category.name
         except:
             # raise serializers.ValidationError("获取商品失败")
             data['price'] = None
             data['start_time'] = None
             data['end_time'] = None
-            data['unit'] = None
+            data['unit'] = instance.unit.name
             data['category'] = instance.category.name
         return data
     
@@ -83,7 +79,7 @@ class PriceRequestModelSerializer(serializers.ModelSerializer):
         data['price'] = instance.price.price
         data['start_time'] = instance.price.start_time
         data['end_time'] = instance.price.end_time
-        data['unit'] = instance.price.unit.name
+        data['unit'] = instance.product.unit.name
         data['category'] = instance.product.category.name
         data['product'] = instance.product.name
         data['product_id'] = instance.product.id
