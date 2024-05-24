@@ -37,10 +37,19 @@ class PriceModel(models.Model):
     unit = models.ForeignKey(UnitModel, on_delete=models.CASCADE, default=1)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
-    status = models.BooleanField(default=True)
+    status = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'price'
         verbose_name = '价格'
         verbose_name_plural = verbose_name
 
+class PriceRequestModel(models.Model):
+    price = models.OneToOneField(PriceModel, related_name='request', on_delete=models.CASCADE)
+    product = models.OneToOneField(GoodsModel, related_name='pricerequest', on_delete=models.CASCADE)
+    requested_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'price_request'
+        verbose_name = '价格请求'
+        verbose_name_plural = verbose_name

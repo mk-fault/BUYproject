@@ -10,6 +10,7 @@ def custom_exception_handler(exc, context):
     if isinstance(exc, ValidationError):
         custom_response_data = {
             "msg": exc.detail,
+            "data": None,
             "code": response.status_code
         }
         return Response(custom_response_data, status=response.status_code)
@@ -18,6 +19,7 @@ def custom_exception_handler(exc, context):
     if response is not None:
         custom_response_data = {
             "msg": response.data,
+            "data": None,
             "code": response.status_code
         }
         return Response(custom_response_data, status=response.status_code)
