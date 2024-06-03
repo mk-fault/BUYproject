@@ -13,6 +13,11 @@ class PriceModelSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         data['product_id'] = data.pop('product')
         data['cycle_id'] = data.pop('cycle')
+        product = instance.product
+        data['product_name'] = product.name
+        data['product_unit'] = product.unit.name
+        data['product_category'] = product.category.name
+        data['product_description'] = product.description
         return data
 
 class UnitModelSerializer(serializers.ModelSerializer):
@@ -26,71 +31,36 @@ class CategoryModelSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 class GoodsModelSerializer(serializers.ModelSerializer):
-    # price = serializers.DecimalField(max_digits=10, decimal_places=2)  # 添加一个价格字段
-    # status = serializers.BooleanField(default=True)
+    price = serializers.DecimalField(max_digits=10, decimal_places=2, write_only=True)
 
     class Meta:
         model = GoodsModel
-        fields = ['id', 'name', 'image', 'description', 'ori_price', 'unit', 'category','status']
-        
+        fields = ['id', 'name', 'image', 'description', 'price', 'unit', 'category']
+
+    def create(self, validated_data):
+        validated_data['ori_price'] = validated_data.pop('price')
+        return super().create(validated_data)
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        if data['ori_price'] is not None:
-            data['price'] = data.pop('ori_price')
-            return data
-        else:
-            try:
-                data['price'] = instance.prices.filter(status=2).first().price
-                data['start_date'] = instance.prices.filter(status=2).first().start_date
-                data['end_date'] = instance.prices.filter(status=2).first().end_date
-                data['unit'] = instance.unit.name
-                data['category'] = instance.category.name
-            except:
-                data['price'] = None
-                data['start_date'] = None
-                data['end_date'] = None
-                data['unit'] = instance.unit.name
-                data['category'] = instance.category.name
-            return data
-                
+        try:
+            now_time = datetime.datetime.now()
+            # now_time = "2024-06-18"
+            price = instance.prices.filter(status=2, start_date__lt=now_time, end_date__gt=now_time).first()
+            data['price'] = price.price
+            data['unit'] = instance.unit.name
+            data['category'] = instance.category.name
+        except:
+            # if instance.ori_price is not None:
+            #     data['price'] = instance.ori_price
+            #     data['status'] = instance.status
+            # else:
+            #     data['price'] = None
+            data['price'] = None
+            data['unit'] = instance.unit.name
+            data['category'] = instance.category.name
+        return data
 
-
-    # def create(self, validated_data):
-    #     # 获取传入的价格数据
-    #     price_data = validated_data.pop('price')
-
-    #     # 获取当前时间和结束时间
-    #     start_time = datetime.datetime.now()
-    #     end_time = start_time + datetime.timedelta(days=30)
-
-    #     # 创建商品对象
-    #     product = GoodsModel.objects.create(**validated_data)
-
-    #     # 创建关联的价格对象
-    #     price = PriceModel.objects.create(product=product, start_time=start_time, end_time=end_time, price=price_data)
-
-    #     # 创建关联的价格请求对象
-    #     PriceRequestModel.objects.create(product=product, price=price)
-
-    #     return product
-    
-    # def to_representation(self, instance):
-    #     # 编辑返回的数据
-    #     data = super().to_representation(instance)
-    #     try:
-    #         data['price'] = instance.prices.filter(status=True).first().price
-    #         data['start_time'] = instance.prices.filter(status=True).first().start_time
-    #         data['end_time'] = instance.prices.filter(status=True).first().end_time
-    #         data['unit'] = instance.unit.name
-    #         data['category'] = instance.category.name
-    #     except:
-    #         # raise serializers.ValidationError("获取商品失败")
-    #         data['price'] = None
-    #         data['start_time'] = None
-    #         data['end_time'] = None
-    #         data['unit'] = instance.unit.name
-    #         data['category'] = instance.category.name
-    #     return data
     
 class PriceRequestModelSerializer(serializers.ModelSerializer):
     class Meta:
@@ -99,8 +69,8 @@ class PriceRequestModelSerializer(serializers.ModelSerializer):
     
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        # data['price_id'] = data['price']
         data['price'] = instance.price.price
+        data['cycle_name'] = instance.price.cycle.name
         data['start_date'] = instance.price.start_date
         data['end_date'] = instance.price.end_date
         data['unit'] = instance.product.unit.name
@@ -114,7 +84,7 @@ class PriceCycleModelSerializer(serializers.ModelSerializer):
     status = serializers.BooleanField(default=True)
     class Meta:
         model = PriceCycleModel
-        fields = '__all__'
+        exclude = ['create_at', 'update_at']
         read_only_fields = ['creater_id']
         
     def create(self, validated_data):

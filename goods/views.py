@@ -29,12 +29,37 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
             return [IsRole0()]
         
         return super().get_permissions()
+    
+    def get_queryset(self):
+        queryset = super().get_queryset().order_by('id')
+
+        # 当粮油公司查看商品时，列出所有商品，包括未上架、为审核的商品
+        if self.request.user.role == "0":
+            return queryset
+        
+        # 当其他用户查看商品时，列出可用商品（已上架、当前价格周期内有已审核价格的商品）
+        now_time = datetime.datetime.now()
+        # now_time = "2024-06-18"
+        # queryset = [product for product in queryset if product.prices.filter(status=2, start_date__lt=now_time, end_date__gt=now_time).exists()]
+        queryset = queryset.filter(status=True, prices__status=2, prices__start_date__lt=now_time, prices__end_date__gt=now_time).order_by('id').distinct()
+
+        return queryset
+
 
 # 价格周期视图集
 class PriceCycleViewSet(myresponse.CustomModelViewSet):
     queryset = PriceCycleModel.objects.all()
     serializer_class = PriceCycleModelSerializer
-    permission_classes = [IsRole1]
+    # permission_classes = [IsRole1]
+
+        # 粮油公司用户仅允许查看周期
+    def get_permissions(self):
+        if self.action == 'list' or self.action == 'retrieve':
+            return [IsRole0OrRole1()]
+        elif self.action == 'destroy' or self.action == 'update' or self.action == 'partial_update':
+            return [IsRole1()]
+        
+        return super().get_permissions()
 
     # 创建价格周期时，分情况创建price对象
     def perform_create(self, serializer):
@@ -101,52 +126,29 @@ class PriceViewSet(viewsets.GenericViewSet,
         instance.review_time = None                      # 审核时间清空
         instance.save()
 
-
-    # # 添加时修改价格状态
-    # def perform_create(self, serializer):
-    #     # 将商品以往价格status设置为False
-    #     product = self.request.data.get('product')
-    #     PriceModel.objects.filter(product=product).update(status=False)
-    #     return super().perform_create(serializer)
-
-    # def perform_create(self, serializer):
-    #     # 保存新的 PriceModel 实例
-    #     instance = serializer.save()
-
-    #     # 提取到对应商品实例
-    #     product = instance.product
-
-    #     # 检查是否已经存在该商品的价格请求
-    #     existing_request = PriceRequestModel.objects.filter(product=product).first()
-    #     if existing_request:
-    #         existing_request.delete()
-        
-    #     # 创建一个新的 PriceRequestModel 实例关联到这个 PriceModel 实例
-    #     PriceRequestModel.objects.create(price=instance,product=product)
-
     # 按商品ID查询商品过往所有价格
-    @action(detail=False, methods=['post'], url_path='history')
-    def get_prices_by_product(self, request):
-        product_id = request.data.get('product')
-        if not product_id:
-            return Response({"msg": "Product ID is required.",
-                             "data": None,
-                             "code":status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+    # @action(detail=False, methods=['post'], url_path='history')
+    # def get_prices_by_product(self, request):
+    #     product_id = request.data.get('product')
+    #     if not product_id:
+    #         return Response({"msg": "Product ID is required.",
+    #                          "data": None,
+    #                          "code":status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            product = GoodsModel.objects.get(id=product_id)
-        except GoodsModel.DoesNotExist:
-            return Response({"msg": "Product not found.",
-                             "data": None,
-                             "code": status.HTTP_404_NOT_FOUND}, status=status.HTTP_404_NOT_FOUND)
+    #     try:
+    #         product = GoodsModel.objects.get(id=product_id)
+    #     except GoodsModel.DoesNotExist:
+    #         return Response({"msg": "Product not found.",
+    #                          "data": None,
+    #                          "code": status.HTTP_404_NOT_FOUND}, status=status.HTTP_404_NOT_FOUND)
 
-        prices = PriceModel.objects.filter(product=product)
-                # 使用分页器
-        paginator = GoodsPagination()
-        page = paginator.paginate_queryset(prices, request)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return paginator.get_paginated_response(serializer.data)
+    #     prices = PriceModel.objects.filter(product=product)
+    #             # 使用分页器
+    #     paginator = GoodsPagination()
+    #     page = paginator.paginate_queryset(prices, request)
+    #     if page is not None:
+    #         serializer = self.get_serializer(page, many=True)
+    #         return paginator.get_paginated_response(serializer.data)
         
     
 class PriceRequestViewSet(viewsets.GenericViewSet,

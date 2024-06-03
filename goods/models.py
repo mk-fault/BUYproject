@@ -2,6 +2,7 @@ from django.db import models
 
 # Create your models here.
 
+# 商品种类模型
 class CategoryModel(models.Model):
     name = models.CharField(max_length=100, verbose_name="类别名")
 
@@ -10,6 +11,7 @@ class CategoryModel(models.Model):
         verbose_name = '类别'
         verbose_name_plural = verbose_name
 
+# 商品计量单位模型
 class UnitModel(models.Model):
     name = models.CharField(max_length=10, verbose_name='单位名称')
 
@@ -18,7 +20,7 @@ class UnitModel(models.Model):
         verbose_name = '单位'
         verbose_name_plural = verbose_name
 
-
+# 商品模型
 class GoodsModel(models.Model):
     name = models.CharField(max_length=100, verbose_name='商品名称')
     category = models.ForeignKey(CategoryModel, on_delete=models.CASCADE, verbose_name='商品类别')
@@ -35,6 +37,7 @@ class GoodsModel(models.Model):
         verbose_name = '商品'
         verbose_name_plural = verbose_name
 
+# 价格周期模型
 class PriceCycleModel(models.Model):
     name = models.CharField(max_length=200, verbose_name="周期名字")
     start_date = models.DateField(verbose_name="周期开始时间")
@@ -49,6 +52,7 @@ class PriceCycleModel(models.Model):
         verbose_name = '价格周期'
         verbose_name_plural = verbose_name
 
+# 价格模型
 class PriceModel(models.Model):
     product = models.ForeignKey(GoodsModel, related_name='prices', on_delete=models.CASCADE, verbose_name="关联商品")
     price = models.DecimalField(max_digits=10, decimal_places=2,verbose_name="当前报价")
@@ -67,6 +71,7 @@ class PriceModel(models.Model):
         verbose_name = '价格'
         verbose_name_plural = verbose_name
 
+# 价格请求模型
 class PriceRequestModel(models.Model):
     price = models.OneToOneField(PriceModel, on_delete=models.CASCADE)
     product = models.OneToOneField(GoodsModel, on_delete=models.CASCADE)
