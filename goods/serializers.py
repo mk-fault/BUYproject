@@ -32,14 +32,21 @@ class CategoryModelSerializer(serializers.ModelSerializer):
 
 class GoodsModelSerializer(serializers.ModelSerializer):
     price = serializers.DecimalField(max_digits=10, decimal_places=2, write_only=True)
+    status = serializers.BooleanField(default=True,write_only=True)
 
     class Meta:
         model = GoodsModel
-        fields = ['id', 'name', 'image', 'description', 'price', 'unit', 'category']
+        fields = ['id', 'name', 'image', 'description', 'price', 'unit', 'category', 'status']
 
+    # 创建一个商品时，为它生成目前以及日期往后已存在的价格周期的价格对象
     def create(self, validated_data):
-        validated_data['ori_price'] = validated_data.pop('price')
-        return super().create(validated_data)
+        price = validated_data.pop('price')
+        instance = super().create(validated_data)
+        now_time = datetime.datetime.now()
+        cycle_queryset = PriceCycleModel.objects.filter(end_date__gt=now_time, status=True)
+        for cycle in cycle_queryset:
+            PriceModel.objects.create(product=instance, price=price, cycle=cycle, start_date=cycle.start_date, end_date=cycle.end_date,status=0)
+        return instance
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -51,11 +58,6 @@ class GoodsModelSerializer(serializers.ModelSerializer):
             data['unit'] = instance.unit.name
             data['category'] = instance.category.name
         except:
-            # if instance.ori_price is not None:
-            #     data['price'] = instance.ori_price
-            #     data['status'] = instance.status
-            # else:
-            #     data['price'] = None
             data['price'] = None
             data['unit'] = instance.unit.name
             data['category'] = instance.category.name
