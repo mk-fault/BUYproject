@@ -45,8 +45,12 @@ class GoodsModelSerializer(serializers.ModelSerializer):
         now_time = datetime.datetime.now()
         # now_time = "2024-07-18"
         cycle_queryset = PriceCycleModel.objects.filter(end_date__gt=now_time, status=True)
-        for cycle in cycle_queryset:
-            PriceModel.objects.create(product=instance, price=price, cycle=cycle, start_date=cycle.start_date, end_date=cycle.end_date,status=0)
+        if not cycle_queryset:
+            instance.ori_price = price
+            instance.save()
+        else:
+            for cycle in cycle_queryset:
+                PriceModel.objects.create(product=instance, price=price, cycle=cycle, start_date=cycle.start_date, end_date=cycle.end_date,status=0)
         return instance
 
     def to_representation(self, instance):

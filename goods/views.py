@@ -83,32 +83,33 @@ class PriceCycleViewSet(myresponse.CustomModelViewSet):
         # 获得所有的商品
         product_queryset = GoodsModel.objects.all()
         for product in product_queryset:
-
-            # # 当由ori_price时表示刚上架的商品，使用ori_price
-            # if product.ori_price is not None:
-            #     PriceModel.objects.create(
-            #         product=product,
-            #         price=product.ori_price,
-            #         cycle=instance,
-            #         start_date=instance.start_date,
-            #         end_date=instance.end_date,
-            #         status=0
-            #     )
-            #     product.ori_price = None
-            #     product.status = True
-            #     product.save()
-            # # 否则是已存在的商品，使用上一个价格
-            # else:
+            # 当由ori_price时表示创建时没有可用价格周期的商品，使用ori_price
+            if product.ori_price is not None:
+                PriceModel.objects.create(
+                    product=product,
+                    price=product.ori_price,
+                    cycle=instance,
+                    start_date=instance.start_date,
+                    end_date=instance.end_date,
+                    status=0
+                )
+                product.ori_price = None
+                product.save()
+            # 否则是已存在价格对象的商品，使用上一个价格
+            else:
             # 使用上一个价格
-            old_price = PriceModel.objects.filter(product=product).order_by('-id').first().price
-            PriceModel.objects.create(
-                product=product,
-                price=old_price,
-                cycle=instance,
-                start_date=instance.start_date,
-                end_date=instance.end_date,
-                status=0
-            )
+                try:
+                    old_price = PriceModel.objects.filter(product=product).order_by('-id').first().price
+                except:
+                    old_price = 0
+                PriceModel.objects.create(
+                    product=product,
+                    price=old_price,
+                    cycle=instance,
+                    start_date=instance.start_date,
+                    end_date=instance.end_date,
+                    status=0
+                )
     
     # 弃用一个周期，并将该周期的价格对象的状态都设置为-99（已弃用）
     @action(detail=True, methods=['post'])

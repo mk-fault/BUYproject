@@ -26,7 +26,7 @@ class GoodsModel(models.Model):
     category = models.ForeignKey(CategoryModel, on_delete=models.CASCADE, verbose_name='商品类别')
     unit = models.ForeignKey(UnitModel, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='goods/', verbose_name='商品图片',blank=True, null=True)
-    # ori_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="商品初始价格",blank=True,null=True)
+    ori_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="商品初始价格",blank=True,null=True)
     description = models.TextField(verbose_name='商品描述')
     status = models.BooleanField(verbose_name="商品状态",default=True)
     create_at = models.DateTimeField(auto_now_add=True, verbose_name='添加时间')
