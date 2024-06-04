@@ -52,7 +52,7 @@ class PriceCycleViewSet(myresponse.CustomModelViewSet):
     serializer_class = PriceCycleModelSerializer
     # permission_classes = [IsRole1]
 
-        # 粮油公司用户仅允许查看周期
+    # 粮油公司用户仅允许查看周期
     def get_permissions(self):
         if self.action == 'list' or self.action == 'retrieve':
             return [IsRole0OrRole1()]
@@ -60,6 +60,19 @@ class PriceCycleViewSet(myresponse.CustomModelViewSet):
             return [IsRole1()]
         
         return super().get_permissions()
+    
+    # 当粮油公司查看时只能查看到价格周期状态为True的
+    def get_queryset(self):
+        queryset = super().get_queryset().order_by('id')
+
+        # 教体局可以查看所有的周期
+        if self.request.user.role == "1":
+            return queryset
+        
+        # 粮油公司查看时只能看到可用的周期
+        queryset = queryset.filter(status=True).order_by('id')
+
+        return queryset
 
     # 创建价格周期时，分情况创建price对象
     def perform_create(self, serializer):
@@ -67,6 +80,7 @@ class PriceCycleViewSet(myresponse.CustomModelViewSet):
         # 获得所有的商品
         product_queryset = GoodsModel.objects.all()
         for product in product_queryset:
+            
             # 当由ori_price时表示刚上架的商品，使用ori_price
             if product.ori_price is not None:
                 PriceModel.objects.create(
