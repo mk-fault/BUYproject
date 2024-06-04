@@ -39,7 +39,7 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
         
         # 当其他用户查看商品时，列出可用商品（已上架、当前价格周期内有已审核价格的商品）
         now_time = datetime.datetime.now()
-        # now_time = "2024-06-18"
+        # now_time = "2024-07-18"
         # queryset = [product for product in queryset if product.prices.filter(status=2, start_date__lt=now_time, end_date__gt=now_time).exists()]
         queryset = queryset.filter(status=True, prices__status=2, prices__start_date__lt=now_time, prices__end_date__gt=now_time).order_by('id').distinct()
 
@@ -51,6 +51,7 @@ class PriceCycleViewSet(myresponse.CustomModelViewSet):
     queryset = PriceCycleModel.objects.all()
     serializer_class = PriceCycleModelSerializer
     # permission_classes = [IsRole1]
+
 
     # 粮油公司用户仅允许查看周期
     def get_permissions(self):
@@ -65,13 +66,15 @@ class PriceCycleViewSet(myresponse.CustomModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset().order_by('id')
 
-        # 教体局可以查看所有的周期
-        if self.request.user.role == "1":
-            return queryset
+        # # 教体局可以查看所有的周期
+        # if self.request.user.role == "1":
+        #     return queryset
         
-        # 粮油公司查看时只能看到可用的周期
-        queryset = queryset.filter(status=True).order_by('id')
+        # # 粮油公司查看时只能看到可用的周期
+        # queryset = queryset.filter(status=True).order_by('id')
 
+        # 只能查看到status=True的周期
+        queryset = queryset.filter(status=True).order_by('id')
         return queryset
 
     # 创建价格周期时，分情况创建price对象
@@ -106,6 +109,23 @@ class PriceCycleViewSet(myresponse.CustomModelViewSet):
                 end_date=instance.end_date,
                 status=0
             )
+    
+    # 弃用一个周期，并将该周期的价格对象的状态都设置为-99（已弃用）
+    @action(detail=True, methods=['post'])
+    def deprecate(self, request, pk=None):
+        price_cycle = self.get_object()
+        price_cycle.status = False
+        price_cycle.creater_id = request.user.id
+        price_queryset = price_cycle.prices.all()
+        for price in price_queryset:
+            price.status = -99
+            price.save()
+        price_cycle.save()
+        return Response({"msg": "Price Cycle deprecate",
+                            "data": None,
+                            "code": status.HTTP_200_OK}, status=status.HTTP_200_OK)
+    
+        
 
         
 
@@ -117,6 +137,15 @@ class PriceViewSet(viewsets.GenericViewSet,
     serializer_class = PriceModelSerializer
     filterset_class = PriceFilter
     permission_classes = [IsRole0]
+
+    # queryset去除掉status=-99即已弃用的价格
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        # 粮油公司查看时只能看到可用的周期
+        queryset = queryset.exclude(status=-99).order_by('id')
+
+        return queryset
 
     # 修改时创建价格请求
     def perform_update(self, serializer):

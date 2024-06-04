@@ -43,6 +43,7 @@ class GoodsModelSerializer(serializers.ModelSerializer):
         price = validated_data.pop('price')
         instance = super().create(validated_data)
         now_time = datetime.datetime.now()
+        # now_time = "2024-07-18"
         cycle_queryset = PriceCycleModel.objects.filter(end_date__gt=now_time, status=True)
         for cycle in cycle_queryset:
             PriceModel.objects.create(product=instance, price=price, cycle=cycle, start_date=cycle.start_date, end_date=cycle.end_date,status=0)
@@ -52,7 +53,7 @@ class GoodsModelSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         try:
             now_time = datetime.datetime.now()
-            # now_time = "2024-06-18"
+            # now_time = "2024-07-18"
             price = instance.prices.filter(status=2, start_date__lt=now_time, end_date__gt=now_time).first()
             data['price'] = price.price
             data['unit'] = instance.unit.name
@@ -83,10 +84,10 @@ class PriceRequestModelSerializer(serializers.ModelSerializer):
         return data
     
 class PriceCycleModelSerializer(serializers.ModelSerializer):
-    status = serializers.BooleanField(default=True)
+    # status = serializers.BooleanField(default=True)
     class Meta:
         model = PriceCycleModel
-        exclude = ['create_at', 'update_at']
+        exclude = ['create_at', 'update_at', 'status']
         read_only_fields = ['creater_id']
         
     def create(self, validated_data):
