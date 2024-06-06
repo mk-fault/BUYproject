@@ -135,33 +135,47 @@ class PriceViewSet(viewsets.GenericViewSet,
                    myresponse.CustomUpdateModelMixin,
                    myresponse.CustomListModelMixin): 
     queryset = PriceModel.objects.all()
-    serializer_class = PriceModelSerializer
+    # serializer_class = PriceModelSerializer
     filterset_class = PriceFilter
-    permission_classes = [IsRole0]
+    permission_classes = [IsRole0OrRole1]
 
-    # queryset去除掉status=-99即已弃用的价格
+    def get_permissions(self):
+        # accept和reject价格审查行为仅允许教体局组使用
+        if self.action in ['accept', 'reject']:
+            return [IsRole1()]
+        else:
+            return [IsRole0OrRole1()]
+
     def get_queryset(self):
         queryset = super().get_queryset()
-
-        # 粮油公司查看时只能看到可用的周期
-        queryset = queryset.exclude(status=-99).order_by('id')
-
+        # 粮油公司的queryset去除掉status=-99即已弃用的价格
+        if self.request.user.role == '0':
+            queryset = queryset.exclude(status=-99).order_by('id')
+        # 教体局的queryset只查询未审核的价格
+        else:
+            queryset = queryset.filter(status=1).order_by('id')
         return queryset
+    
+    def get_serializer_class(self):
+        if self.action == 'partial_update':
+            return PricePatchSerializer
+        else:
+            return PriceModelSerializer
 
     # 修改时创建价格请求
     def perform_update(self, serializer):
         #  price对象实例
         instance = serializer.save()
 
-        # 提取到对应商品实例
-        product = instance.product
-        # 检查是否已经存在该商品的价格请求
-        existing_request = PriceRequestModel.objects.filter(product=product).first()
-        if existing_request:
-            existing_request.delete()
+        # # 提取到对应商品实例
+        # product = instance.product
+        # # 检查是否已经存在该商品的价格请求
+        # existing_request = PriceRequestModel.objects.filter(product=product).first()
+        # if existing_request:
+        #     existing_request.delete()
         
-        # 创建一个新的 PriceRequestModel 实例关联到这个 PriceModel 实例
-        PriceRequestModel.objects.create(price=instance,product=product)
+        # # 创建一个新的 PriceRequestModel 实例关联到这个 PriceModel 实例
+        # PriceRequestModel.objects.create(price=instance,product=product)
         
         # 将price的状态修改为1（未审核）
         instance.status = 1
@@ -169,51 +183,17 @@ class PriceViewSet(viewsets.GenericViewSet,
         instance.create_time = datetime.datetime.now()   # 申请时间为当前时间
         instance.reviewer_id = None                      # 审核人清空
         instance.review_time = None                      # 审核时间清空
-        instance.save()
-
-    # 按商品ID查询商品过往所有价格
-    # @action(detail=False, methods=['post'], url_path='history')
-    # def get_prices_by_product(self, request):
-    #     product_id = request.data.get('product')
-    #     if not product_id:
-    #         return Response({"msg": "Product ID is required.",
-    #                          "data": None,
-    #                          "code":status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
-
-    #     try:
-    #         product = GoodsModel.objects.get(id=product_id)
-    #     except GoodsModel.DoesNotExist:
-    #         return Response({"msg": "Product not found.",
-    #                          "data": None,
-    #                          "code": status.HTTP_404_NOT_FOUND}, status=status.HTTP_404_NOT_FOUND)
-
-    #     prices = PriceModel.objects.filter(product=product)
-    #             # 使用分页器
-    #     paginator = GoodsPagination()
-    #     page = paginator.paginate_queryset(prices, request)
-    #     if page is not None:
-    #         serializer = self.get_serializer(page, many=True)
-    #         return paginator.get_paginated_response(serializer.data)
-        
-    
-class PriceRequestViewSet(viewsets.GenericViewSet,
-                               myresponse.CustomListModelMixin):
-    queryset = PriceRequestModel.objects.all()
-    serializer_class = PriceRequestModelSerializer
-    permission_classes = [IsRole1]
+        instance.save()     
 
     # 通过某价格请求
     @action(detail=True, methods=['post'])
     def accept(self, request, pk=None):
-        price_request = self.get_object()
-        price = price_request.price
+        price = self.get_object()
         # 将刚审核的价格状态设置为2(已审核)，更新审核人id和审核时间
         price.status = 2
         price.reviewer_id = request.user.id
         price.review_time = datetime.datetime.now()
         price.save()
-        # 将已审核的价格请求删除
-        price_request.delete()
         return Response({"msg": "Price Request Accept",
                             "data": None,
                             "code": status.HTTP_200_OK}, status=status.HTTP_200_OK)
@@ -221,33 +201,53 @@ class PriceRequestViewSet(viewsets.GenericViewSet,
     # 拒绝某价格请求
     @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):
-        price_request = self.get_object()
-        price = price_request.price
+        price = self.get_object()
         # 将刚审核的价格状态设置为-1(已拒绝)，更新审核人id和审核时间
         price.status = -1
         price.reviewer_id = request.user.id
         price.review_time = datetime.datetime.now()
         price.save()
-        # 将已审核的价格请求删除
-        price_request.delete()
         return Response({"msg": "Price Request Reject",
                             "data": None,
                             "code": status.HTTP_200_OK}, status=status.HTTP_200_OK)
-    # @action(detail=True, methods=['post'])
-    # def review(self, request, pk=None):
-    #     price_request = self.get_object()
-    #     price = price_request.price
-    #     # 将商品以往的价格状态设置为false
-    #     product = price.product
-    #     PriceModel.objects.filter(product=product).update(status=False)
-    #     # 将刚审核的价格状态设置为true
-    #     price.status = True
-    #     price.save()
-    #     # 将已审核的价格请求删除
-    #     price_request.delete()
-    #     return Response({"msg": "Price Review successfully.",
-    #                         "data": None,
-    #                         "code": status.HTTP_200_OK}, status=status.HTTP_200_OK)
+    
+# class PriceRequestViewSet(viewsets.GenericViewSet,
+#                                myresponse.CustomListModelMixin):
+#     queryset = PriceRequestModel.objects.all()
+#     serializer_class = PriceRequestModelSerializer
+#     permission_classes = [IsRole1]
+
+#     # 通过某价格请求
+#     @action(detail=True, methods=['post'])
+#     def accept(self, request, pk=None):
+#         price_request = self.get_object()
+#         price = price_request.price
+#         # 将刚审核的价格状态设置为2(已审核)，更新审核人id和审核时间
+#         price.status = 2
+#         price.reviewer_id = request.user.id
+#         price.review_time = datetime.datetime.now()
+#         price.save()
+#         # 将已审核的价格请求删除
+#         price_request.delete()
+#         return Response({"msg": "Price Request Accept",
+#                             "data": None,
+#                             "code": status.HTTP_200_OK}, status=status.HTTP_200_OK)
+    
+#     # 拒绝某价格请求
+#     @action(detail=True, methods=['post'])
+#     def reject(self, request, pk=None):
+#         price_request = self.get_object()
+#         price = price_request.price
+#         # 将刚审核的价格状态设置为-1(已拒绝)，更新审核人id和审核时间
+#         price.status = -1
+#         price.reviewer_id = request.user.id
+#         price.review_time = datetime.datetime.now()
+#         price.save()
+#         # 将已审核的价格请求删除
+#         price_request.delete()
+#         return Response({"msg": "Price Request Reject",
+#                             "data": None,
+#                             "code": status.HTTP_200_OK}, status=status.HTTP_200_OK)
 
 
 # 计量单位视图集

@@ -71,15 +71,15 @@ class PriceModel(models.Model):
         verbose_name = '价格'
         verbose_name_plural = verbose_name
 
-# 价格请求模型
-class PriceRequestModel(models.Model):
-    price = models.OneToOneField(PriceModel, on_delete=models.CASCADE)
-    product = models.OneToOneField(GoodsModel, on_delete=models.CASCADE)
-    requested_at = models.DateTimeField(auto_now_add=True)
+# # 价格请求模型
+# class PriceRequestModel(models.Model):
+#     price = models.OneToOneField(PriceModel, on_delete=models.CASCADE)
+#     product = models.OneToOneField(GoodsModel, on_delete=models.CASCADE)
+#     requested_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        db_table = 'price_request'
-        verbose_name = '价格请求'
-        verbose_name_plural = verbose_name
+#     class Meta:
+#         db_table = 'price_request'
+#         verbose_name = '价格请求'
+#         verbose_name_plural = verbose_name
 
 
