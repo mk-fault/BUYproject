@@ -20,6 +20,7 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
     queryset = GoodsModel.objects.all()
     serializer_class = GoodsModelSerializer
     pagination_class = GoodsPagination
+    filterset_class = GoodsFilter
 
     # 非粮油公司用户仅允许查看商品
     def get_permissions(self):

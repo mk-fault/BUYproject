@@ -11,3 +11,10 @@ class PriceFilter(filters.FilterSet):
     class Meta:
         model = PriceModel
         fields = ['status', 'product_id', 'cycle_id', 'category_id', 'product_name']
+
+class GoodsFilter(filters.FilterSet):
+    category_id = filters.NumberFilter(field_name='category__id')
+
+    class Meta:
+        model = GoodsModel
+        fields = ['category_id',]
