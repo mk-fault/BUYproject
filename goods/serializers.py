@@ -13,6 +13,7 @@ class PriceModelSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         data['product_id'] = data.pop('product')
         data['cycle_id'] = data.pop('cycle')
+        data['cycle_name'] = instance.cycle.name
         product = instance.product
         data['product_name'] = product.name
         data['product_unit'] = product.unit.name
