@@ -255,13 +255,31 @@ class PriceViewSet(viewsets.GenericViewSet,
 class UnitViewSet(myresponse.CustomModelViewSet):
     queryset = UnitModel.objects.all()
     serializer_class = UnitModelSerializer
-    permission_classes = [IsRole0]
+    # permission_classes = [IsRole0]
+
+    # 非粮油公司组仅能查询
+    def get_permissions(self):
+        if self.action == 'list' or self.action == 'retrieve':
+            return [permissions.IsAuthenticated()]
+        elif self.action == 'destroy' or self.action == 'update' or self.action == 'partial_update':
+            return [IsRole0()]
+        
+        return super().get_permissions()
 
 # 商品种类视图集
 class CategoryViewSet(myresponse.CustomModelViewSet):
     queryset = CategoryModel.objects.all()
     serializer_class = CategoryModelSerializer
-    permission_classes = [IsRole0]
+    # permission_classes = [IsRole0]
+
+    # 非粮油公司组仅能查询
+    def get_permissions(self):
+        if self.action == 'list' or self.action == 'retrieve':
+            return [permissions.IsAuthenticated()]
+        elif self.action == 'destroy' or self.action == 'update' or self.action == 'partial_update':
+            return [IsRole0()]
+        
+        return super().get_permissions()
 
 
 

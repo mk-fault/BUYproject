@@ -3,7 +3,7 @@ from django_filters import rest_framework as filters
 
 class PriceFilter(filters.FilterSet):
     product_id = filters.NumberFilter(field_name='product__id')
-    product_name = filters.CharFilter(field_name="product__name")
+    product_name = filters.CharFilter(field_name="product__name", lookup_expr='icontains')
     cycle_id = filters.NumberFilter(field_name='cycle__id')
     category_id = filters.NumberFilter(field_name='product__category__id')
 
