@@ -26,10 +26,9 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
     def get_permissions(self):
         if self.action == 'list' or self.action == 'retrieve':
             return [permissions.IsAuthenticated()]
-        elif self.action == 'destroy' or self.action == 'update' or self.action == 'partial_update':
+        else:
             return [IsRole0()]
         
-        return super().get_permissions()
     
     def get_queryset(self):
         queryset = super().get_queryset().order_by('id')
@@ -48,7 +47,9 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
 
 
 # 价格周期视图集
-class PriceCycleViewSet(myresponse.CustomModelViewSet):
+class PriceCycleViewSet(viewsets.GenericViewSet,
+                        myresponse.CustomListModelMixin,
+                        myresponse.CustomCreateModelMixin):
     queryset = PriceCycleModel.objects.all()
     serializer_class = PriceCycleModelSerializer
     # permission_classes = [IsRole1]
@@ -56,12 +57,11 @@ class PriceCycleViewSet(myresponse.CustomModelViewSet):
 
     # 粮油公司用户仅允许查看周期
     def get_permissions(self):
-        if self.action == 'list' or self.action == 'retrieve':
+        if self.action == 'list':
             return [IsRole0OrRole1()]
-        elif self.action == 'destroy' or self.action == 'update' or self.action == 'partial_update':
+        else:
             return [IsRole1()]
         
-        return super().get_permissions()
     
     # 当粮油公司查看时只能查看到价格周期状态为True的
     def get_queryset(self):
@@ -144,6 +144,8 @@ class PriceViewSet(viewsets.GenericViewSet,
         # accept和reject价格审查行为仅允许教体局组使用
         if self.action in ['accept', 'reject']:
             return [IsRole1()]
+        elif self.action == 'partial_update':
+            return [IsRole0()]
         else:
             return [IsRole0OrRole1()]
 
@@ -252,34 +254,38 @@ class PriceViewSet(viewsets.GenericViewSet,
 
 
 # 计量单位视图集
-class UnitViewSet(myresponse.CustomModelViewSet):
+class UnitViewSet(viewsets.GenericViewSet,
+                  myresponse.CustomCreateModelMixin,
+                  myresponse.CustomDestroyModelMixin,
+                  myresponse.CustomListModelMixin):
     queryset = UnitModel.objects.all()
     serializer_class = UnitModelSerializer
     # permission_classes = [IsRole0]
 
     # 非粮油公司组仅能查询
     def get_permissions(self):
-        if self.action == 'list' or self.action == 'retrieve':
+        if self.action == 'list':
             return [permissions.IsAuthenticated()]
-        elif self.action == 'destroy' or self.action == 'update' or self.action == 'partial_update':
+        else:
             return [IsRole0()]
         
-        return super().get_permissions()
 
 # 商品种类视图集
-class CategoryViewSet(myresponse.CustomModelViewSet):
+class CategoryViewSet(viewsets.GenericViewSet,
+                      myresponse.CustomCreateModelMixin,
+                      myresponse.CustomDestroyModelMixin,
+                      myresponse.CustomListModelMixin):
     queryset = CategoryModel.objects.all()
     serializer_class = CategoryModelSerializer
     # permission_classes = [IsRole0]
 
     # 非粮油公司组仅能查询
     def get_permissions(self):
-        if self.action == 'list' or self.action == 'retrieve':
+        if self.action == 'list':
             return [permissions.IsAuthenticated()]
-        elif self.action == 'destroy' or self.action == 'update' or self.action == 'partial_update':
+        else:
             return [IsRole0()]
         
-        return super().get_permissions()
 
 
 

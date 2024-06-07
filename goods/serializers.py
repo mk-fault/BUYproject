@@ -9,11 +9,13 @@ class PriceModelSerializer(serializers.ModelSerializer):
         read_only_fields = ['product', 'cycle', 'start_date', 'end_date', 'status', 'creater_id',
                             'create_time', 'reviewer_id', 'review_time']
     
+    
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data['product_id'] = data.pop('product')
         data['cycle_id'] = data.pop('cycle')
         data['cycle_name'] = instance.cycle.name
+        # data['status'] = instance.get_status_display()
         product = instance.product
         data['product_name'] = product.name
         data['product_unit'] = product.unit.name
