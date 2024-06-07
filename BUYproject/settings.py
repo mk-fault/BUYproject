@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'coreapi',
     'goods',
     'account',
+    'orders',
     'django_cleanup.apps.CleanupConfig', # 清理无用文件
 ]
 
