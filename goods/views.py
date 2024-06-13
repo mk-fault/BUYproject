@@ -9,8 +9,10 @@ from rest_framework.decorators import action
 from .models import *
 from .serializers import *
 from .pagination import GoodsPagination
-from .permissions import *
+from account.permissions import *
 from .filters import *
+from orders.models import FundsModel, CartModel
+from orders.serializers import CartModelSerializer
 from utils import response as myresponse
 
 import datetime
@@ -26,6 +28,8 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
     def get_permissions(self):
         if self.action == 'list' or self.action == 'retrieve':
             return [permissions.IsAuthenticated()]
+        elif self.action == 'order':
+            return [IsRole2()]
         else:
             return [IsRole0()]
         
@@ -44,6 +48,58 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
         queryset = queryset.filter(status=True, prices__status=2, prices__start_date__lt=now_time, prices__end_date__gt=now_time).order_by('id').distinct()
 
         return queryset
+    
+    @action(detail=True, methods=["post"])
+    def order(self, request, pk=None):
+        product = self.get_object()
+        product_id = pk
+        funds = request.data.get('funds')
+        quantity = request.data.get('quantity')
+        creater_id = request.user.id
+
+        # ser = CartModelSerializer(data={
+        #     'product': product_id,
+        #     'funds': funds,
+        #     'quantity': quantity,
+        #     'creater_id': creater_id
+        # })
+
+        # if ser.is_valid():
+        #     ser.save()
+        #     return Response({
+        #         "msg": "Product added to cart successfully",
+        #         "data": None,
+        #         "code": status.HTTP_201_CREATED
+        #     }, status=status.HTTP_201_CREATED)
+        # else:
+        #     return Response({
+        #         "msg": "Invalid data",
+        #         "data": ser.errors,
+        #         "code": status.HTTP_400_BAD_REQUEST
+        #     }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 查看是否存在此经济来源ID
+        funds_obj = FundsModel.objects.filter(id=funds).first()
+        if not funds_obj:
+            return Response({"msg": "Invalid funds ID",
+                             "data": None,
+                             "code": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 检查购物车中是否有相同人创建的相同的商品和经费来源的项，如果有，进行累加
+        existing_cart = CartModel.objects.filter(product=product, funds=funds, creater_id=creater_id).first()
+        if existing_cart:
+            # If it exists, update the quantity by adding the new quantity
+            existing_cart.quantity += int(quantity)
+            existing_cart.save()
+            return Response({"msg": "Product added to cart successfully",
+                     "data": None,
+                     "code": status.HTTP_200_OK}, status=status.HTTP_200_OK)
+        
+        # 没有则创建新的购物车实例
+        CartModel.objects.create(product=product, funds=funds_obj, quantity=quantity, creater_id=creater_id)
+        return Response({"msg": "Product added to cart successfully",
+                 "data": None,
+                 "code": status.HTTP_201_CREATED}, status=status.HTTP_201_CREATED)
 
 
 # 价格周期视图集

@@ -12,8 +12,8 @@ class FundsModel(models.Model):
 
 class CartModel(models.Model):
     product = models.ForeignKey(GoodsModel, on_delete=models.CASCADE, verbose_name="商品实例")
-    funds = models.ForeignKey(FundsModel, on_delete=models.SET_NULL, verbose_name="经费实例", null=True)
-    quantity = models.IntegerField(verbose_name="购买数量")
+    funds = models.ForeignKey(FundsModel, on_delete=models.CASCADE, verbose_name="经费实例", null=True)
+    quantity = models.DecimalField(max_digits=10, decimal_places=2,verbose_name="购买数量")
     creater_id = models.IntegerField(verbose_name="加购人ID")
 
     class Meta:
@@ -41,13 +41,13 @@ class OrderDetailModel(models.Model):
     order = models.ForeignKey(OrdersModel, on_delete=models.CASCADE, verbose_name="订单实例")
     product_id = models.IntegerField(verbose_name="商品ID")
     product_name = models.CharField(max_length=100, verbose_name="商品名称")
-    product_des = models.TextField(verbose_name="商品描述")
+    description = models.TextField(verbose_name="商品描述")
     unit = models.CharField(max_length=100, verbose_name="商品类别")
     category = models.CharField(max_length=100, verbose_name="商品计量单位")
-    price = models.DecimalField(max_digits=10, decimal_places=2,verbose_name="商品价格")
+    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="商品价格")
     funds = models.CharField(max_length=100, verbose_name="经费来源")
-    order_quantity = models.IntegerField(verbose_name="购入数量")
-    received_quantity = models.IntegerField(verbose_name="实收数量", blank=True, null=True)
+    order_quantity = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="购入数量")
+    received_quantity = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="实收数量", blank=True, null=True)
     cost = models.DecimalField(max_digits=10, decimal_places=2,verbose_name="商品总价", blank=True, null=True)
     recipient_id = models.IntegerField(verbose_name="收货人ID", blank=True, null=True)
     recipient_time = models.DateTimeField(verbose_name="收货时间", blank=True, null=True)
