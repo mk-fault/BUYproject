@@ -41,19 +41,8 @@ class CartPatchSerializer(serializers.ModelSerializer):
             
 
 
-    # def create(self, validated_data):
-    #     product_id = validated_data['product']
-    #     funds_id = validated_data['funds']
-    #     creater_id = validated_data['creater_id']
-    #     quantity = validated_data['quantity']
-    #     # Check if a CartModel instance with the same creater_id, product, and funds already exists
-    #     try:
-    #         cart_instance = CartModel.objects.get(creater_id=creater_id, product=product_id, funds=funds_id)
-    #         # If it exists, increment the quantity
-    #         cart_instance.quantity += int(quantity)
-    #         cart_instance.save()
-    #         return cart_instance
-    #     except CartModel.DoesNotExist:
-    #         # If it doesn't exist, create a new instance
-    #         # cart_instance = CartModel.objects.create(creater_id=creater_id, product=product_id, funds=funds_id, quantity=1)
-    #         return super().create(validated_data)
+class OrdersModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrdersModel
+        fields = "__all__"
+

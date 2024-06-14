@@ -29,8 +29,8 @@ class OrdersModel(models.Model):
     accepter_id = models.IntegerField(verbose_name="订单接受人ID", blank=True, null=True)
     accept_time = models.DateTimeField(verbose_name="订单接受时间", blank=True, null=True)
     finish_time = models.DateTimeField(verbose_name="订单完成时间", blank=True, null=True)
-    finish_status_choice = (("0", "未完成"), ("-1", "完成但数量有误"), ("1", "全部完成"))
-    finish_status = models.CharField(max_length=10, choices=finish_status_choice, verbose_name="订单完成情况")
+    # finish_status_choice = (("0", "未完成"), ("-1", "完成但数量有误"), ("1", "全部完成"))
+    # finish_status = models.CharField(max_length=10, choices=finish_status_choice, verbose_name="订单完成情况")
 
     class Meta:
         db_table = 'orders'

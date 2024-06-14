@@ -63,17 +63,15 @@ class GoodsModelSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        try:
-            now_time = datetime.datetime.now()
-            # now_time = "2024-07-18"
-            price = instance.prices.filter(status=2, start_date__lt=now_time, end_date__gt=now_time).first()
-            data['price'] = price.price
-            data['unit'] = instance.unit.name
-            data['category'] = instance.category.name
-        except:
+        now_time = datetime.datetime.now()
+        # now_time = "2024-07-18"
+        price = instance.prices.filter(status=2, start_date__lt=now_time, end_date__gt=now_time).first()
+        if not price:
             data['price'] = None
-            data['unit'] = instance.unit.name
-            data['category'] = instance.category.name
+        else:
+            data['price'] = price.price
+        data['unit'] = instance.unit.name
+        data['category'] = instance.category.name  
         return data
 
     
