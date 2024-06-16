@@ -38,7 +38,7 @@ class OrdersModel(models.Model):
         verbose_name_plural = verbose_name
 
 class OrderDetailModel(models.Model):
-    order = models.ForeignKey(OrdersModel, on_delete=models.CASCADE, verbose_name="订单实例")
+    order = models.ForeignKey(OrdersModel, related_name='details',on_delete=models.CASCADE, verbose_name="订单实例")
     product_id = models.IntegerField(verbose_name="商品ID")
     product_name = models.CharField(max_length=100, verbose_name="商品名称")
     description = models.TextField(verbose_name="商品描述")

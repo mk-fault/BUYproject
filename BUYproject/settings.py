@@ -226,7 +226,7 @@ LOGGING = {
 # jwt配置
 SIMPLE_JWT = {
     # token有效时长
-    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=7),
+    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=30),
     # token刷新后的有效时间
-    'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=7)
+    'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=30)
 }

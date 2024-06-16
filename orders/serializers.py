@@ -46,3 +46,12 @@ class OrdersModelSerializer(serializers.ModelSerializer):
         model = OrdersModel
         fields = "__all__"
 
+class OrderDetailModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderDetailModel
+        fields = "__all__"
+        
+    # def to_representation(self, instance):
+    #     data = super().to_representation(instance)
+    #     data['product_name'] = GoodsModel.objects.get(id=instance.product_id).name
+    #     return data

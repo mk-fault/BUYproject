@@ -9,6 +9,7 @@ from rest_framework import status
 from .models import *
 from .serializers import *
 from .filters import *
+from goods.pagination import GoodsPagination
 from account import permissions as mypermissions
 from utils import response as myresponse
 import datetime
@@ -95,3 +96,17 @@ class OrdersViewset(viewsets.GenericViewSet,
         queryset = queryset.filter(creater_id=user_id).order_by('id')
         return queryset
     
+    @action(methods=['get'], detail=True)
+    def details(self, request, pk=None):
+        order = self.get_object()
+        order_details = order.details.all()
+        page_details = self.paginate_queryset(order_details)
+        if page_details is not None:
+            serializer = OrderDetailModelSerializer(page_details, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = OrderDetailModelSerializer(order_details, many=True)
+        return Response({
+            "msg": "ok",
+            "data": serializer.data,
+            "code": status.HTTP_200_OK
+        }, status=status.HTTP_200_OK)
