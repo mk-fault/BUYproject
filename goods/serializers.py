@@ -15,7 +15,8 @@ class PriceModelSerializer(serializers.ModelSerializer):
         data['product_id'] = data.pop('product')
         data['cycle_id'] = data.pop('cycle')
         data['cycle_name'] = instance.cycle.name
-        # data['status'] = instance.get_status_display()
+        data['status_code'] = data.pop('status')
+        data['status'] = instance.get_status_display()
         product = instance.product
         data['product_name'] = product.name
         data['product_unit'] = product.unit.name

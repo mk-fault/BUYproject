@@ -81,7 +81,7 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
         # 查看是否存在此经济来源ID
         funds_obj = FundsModel.objects.filter(id=funds).first()
         if not funds_obj:
-            return Response({"msg": "Invalid funds ID",
+            return Response({"msg": "经费来源ID错误",
                              "data": None,
                              "code": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -91,13 +91,13 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
             # If it exists, update the quantity by adding the new quantity
             existing_cart.quantity += int(quantity)
             existing_cart.save()
-            return Response({"msg": "Product added to cart successfully",
+            return Response({"msg": "成功添加至购物车",
                      "data": None,
                      "code": status.HTTP_200_OK}, status=status.HTTP_200_OK)
         
         # 没有则创建新的购物车实例
         CartModel.objects.create(product=product, funds=funds_obj, quantity=quantity, creater_id=creater_id)
-        return Response({"msg": "Product added to cart successfully",
+        return Response({"msg": "成功添加至购物车",
                  "data": None,
                  "code": status.HTTP_201_CREATED}, status=status.HTTP_201_CREATED)
 
@@ -179,7 +179,7 @@ class PriceCycleViewSet(viewsets.GenericViewSet,
             price.status = -99
             price.save()
         price_cycle.save()
-        return Response({"msg": "Price Cycle deprecate",
+        return Response({"msg": "价格周期弃用成功",
                             "data": None,
                             "code": status.HTTP_200_OK}, status=status.HTTP_200_OK)
     
@@ -253,7 +253,7 @@ class PriceViewSet(viewsets.GenericViewSet,
         price.reviewer_id = request.user.id
         price.review_time = datetime.datetime.now()
         price.save()
-        return Response({"msg": "Price Request Accept",
+        return Response({"msg": "已批准该价格",
                             "data": None,
                             "code": status.HTTP_200_OK}, status=status.HTTP_200_OK)
     
@@ -266,7 +266,7 @@ class PriceViewSet(viewsets.GenericViewSet,
         price.reviewer_id = request.user.id
         price.review_time = datetime.datetime.now()
         price.save()
-        return Response({"msg": "Price Request Reject",
+        return Response({"msg": "已拒绝该价格",
                             "data": None,
                             "code": status.HTTP_200_OK}, status=status.HTTP_200_OK)
     

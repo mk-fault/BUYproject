@@ -31,7 +31,7 @@ class CustomModelViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        return CustomResponse(data=serializer.data, msg="Created successfully", status=status.HTTP_201_CREATED, headers=headers)
+        return CustomResponse(data=serializer.data, msg="创建成功", status=status.HTTP_201_CREATED, headers=headers)
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
@@ -39,7 +39,7 @@ class CustomModelViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-        return CustomResponse(data=serializer.data, msg="Updated successfully", status=status.HTTP_200_OK)
+        return CustomResponse(data=serializer.data, msg="更新成功", status=status.HTTP_200_OK)
 
     def partial_update(self, request, *args, **kwargs):
         kwargs['partial'] = True
@@ -48,7 +48,7 @@ class CustomModelViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
-        return CustomResponse(data=None, msg="Deleted successfully", status=status.HTTP_204_NO_CONTENT)
+        return CustomResponse(data=None, msg="删除成功", status=status.HTTP_204_NO_CONTENT)
 
     def perform_create(self, serializer):
         serializer.save()
@@ -87,7 +87,7 @@ class CustomCreateModelMixin(mixins.CreateModelMixin):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        return CustomResponse(data=serializer.data, msg="Created successfully", status=status.HTTP_201_CREATED, headers=headers)
+        return CustomResponse(data=serializer.data, msg="创建成功", status=status.HTTP_201_CREATED, headers=headers)
 
     def get_success_headers(self, data):
         try:
@@ -102,10 +102,10 @@ class CustomUpdateModelMixin(mixins.UpdateModelMixin):
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-        return CustomResponse(data=serializer.data, msg="Updated successfully", status=status.HTTP_200_OK)
+        return CustomResponse(data=serializer.data, msg="更新成功", status=status.HTTP_200_OK)
 
 class CustomDestroyModelMixin(mixins.DestroyModelMixin):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
-        return CustomResponse(data=None, msg="Deleted successfully", status=status.HTTP_204_NO_CONTENT)
+        return CustomResponse(data=None, msg="删除成功", status=status.HTTP_204_NO_CONTENT)

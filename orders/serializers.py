@@ -46,6 +46,12 @@ class OrdersModelSerializer(serializers.ModelSerializer):
         model = OrdersModel
         fields = "__all__"
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['status_code'] = data.pop("status")
+        data['status'] = instance.get_status_display()
+        return data
+
 class OrderDetailModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderDetailModel
