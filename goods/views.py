@@ -53,8 +53,12 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
     def order(self, request, pk=None):
         product = self.get_object()
         product_id = pk
+
+        # 获取经费来源与订加购数量
         funds = request.data.get('funds')
         quantity = request.data.get('quantity')
+
+        # 创建人ID为当前用户ID
         creater_id = request.user.id
 
         # ser = CartModelSerializer(data={
@@ -78,8 +82,10 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
         #         "code": status.HTTP_400_BAD_REQUEST
         #     }, status=status.HTTP_400_BAD_REQUEST)
         
-        # 查看是否存在此经济来源ID
+        # 获取经费来源实例
         funds_obj = FundsModel.objects.filter(id=funds).first()
+
+        # 查看是否存在此经济来源ID
         if not funds_obj:
             return Response({"msg": "经费来源ID错误",
                              "data": None,
@@ -88,7 +94,6 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
         # 检查购物车中是否有相同人创建的相同的商品和经费来源的项，如果有，进行累加
         existing_cart = CartModel.objects.filter(product=product, funds=funds, creater_id=creater_id).first()
         if existing_cart:
-            # If it exists, update the quantity by adding the new quantity
             existing_cart.quantity += int(quantity)
             existing_cart.save()
             return Response({"msg": "成功添加至购物车",
