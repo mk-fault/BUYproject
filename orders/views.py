@@ -333,7 +333,7 @@ class OrdersViewset(viewsets.GenericViewSet,
                     "订购数量": detail.order_quantity,
                     "实收数量": detail.received_quantity,
                     "总价": detail.cost,
-                    "收货时间": detail.recipient_time,
+                    "收货时间": str(detail.recipient_time),
                     "学校": username
                 }
                 data.append(detail_data)
