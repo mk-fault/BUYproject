@@ -13,8 +13,8 @@ class AccountSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AccountModel
-        fields = ('id','username','is_active','password', 'role')
-        read_only_fields = ('id','is_active')
+        fields = ('id','username','password', 'role')
+        read_only_fields = ('id',)
         extra_kwargs = {
             'password':{
                 'write_only':True,

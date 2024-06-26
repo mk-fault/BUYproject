@@ -31,7 +31,7 @@ class CartModelSerializer(serializers.ModelSerializer):
             instance.delete()
             raise serializers.ValidationError(f"Cart item {product.name} dont have a price,frush to apply the delete")
         data['funds'] = instance.funds.name
-        data['tolto_price'] = float(data['price']) * float(data['quantity'])  # Convert to floats
+        data['tolto_price'] = round(float(data['price']) * float(data['quantity']), 2)  # Convert to floats and round to 2 decimal places
         return data
     
 class CartPatchSerializer(serializers.ModelSerializer):

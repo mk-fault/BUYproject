@@ -1,4 +1,8 @@
+import os
 from django.shortcuts import render
+from django.http import FileResponse, HttpResponse, StreamingHttpResponse
+from django.utils.encoding import escape_uri_path
+from django.conf.global_settings import MEDIA_ROOT
 
 from rest_framework import viewsets
 from rest_framework import permissions
@@ -11,8 +15,11 @@ from .serializers import *
 from .filters import *
 from goods.pagination import GoodsPagination
 from account import permissions as mypermissions
+from account.models import AccountModel
 from utils import response as myresponse
 import datetime
+import pandas as pd
+from urllib.parse import quote
 # Create your views here.
 
 class FundsViewset(viewsets.GenericViewSet,
@@ -175,6 +182,92 @@ class OrdersViewset(viewsets.GenericViewSet,
             "data": None,
             "code": status.HTTP_200_OK
         }, status=status.HTTP_200_OK)
+    
+    @action(methods=['post'], detail=False)
+    def report(self, request, pk=None):
+        start_date = request.data.get("start_date")
+        end_date = request.data.get("end_date")
+        school_id = request.data.get("school_id", None)
+        queryset = self.get_queryset()
+        
+        # 没传入shool_id时表示是学校账户访问自己的报表
+        if school_id is None:
+            # 判断如果当期账户是非学校账户，则要求传入学校ID
+            if request.user.role in ["0", "1"]:
+                return Response({
+                    "msg": "请传入学校ID",
+                    "data": None,
+                    "code": status.HTTP_400_BAD_REQUEST
+                }, status=status.HTTP_400_BAD_REQUEST)
+            # 过滤在起止日期内的订单详情
+            queryset = queryset.filter(finish_time__range=[start_date, end_date])
+            # username为当期用户
+            username = request.user.username
+        
+        # 如果传入的school_id不是学校账户则返回错误
+        elif AccountModel.objects.filter(id=school_id).first().role != '2':
+            return Response({
+                "msg": "访问对象非学校",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 传入了school_id，表示教体局或粮油公司访问报表
+        else:
+            # 判断当期是否是教体局或粮油公司组用户
+            if request.user.role not in ["0", "1"]:
+                return Response({
+                    "msg": "没有访问权限",
+                    "data": None,
+                    "code": status.HTTP_401_UNAUTHORIZED
+                }, status=status.HTTP_401_UNAUTHORIZED)
+            # 过滤某一学校在起止日期内的订单详情
+            queryset = queryset.filter(finish_time__range=[start_date, end_date], creater_id=school_id)
+            # username为对应school_id的用户名
+            username = AccountModel.objects.filter(id=school_id).first().username
+
+        # 如果查询结果为空，表示时间段内没有订单
+        if not queryset.exists():
+            return Response({
+                "msg": "所选时间段没有订单",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 制作表格数据
+        data = []
+        for order in queryset:
+            order_details = order.details.all()
+            for detail in order_details:
+                detail_data = {
+                    "商品编号": detail.product_id,
+                    "商品名称": detail.product_name,
+                    "商品描述": detail.description,
+                    "计量单位": detail.unit,
+                    "商品种类": detail.category,
+                    "商品单价": detail.price,
+                    "经费来源": detail.funds,
+                    "订购数量": detail.order_quantity,
+                    "实收数量": detail.received_quantity,
+                    "总价": detail.cost,
+                    "收货时间": detail.recipient_time,
+                    "学校": username
+                }
+                data.append(detail_data)
+
+        # 返回文件响应
+        df = pd.DataFrame(data)
+        file_name = f"{username}_{start_date}~{end_date}_订单报表"
+
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = f'attachment; filename="{quote(file_name)}.xlsx"'
+
+        with pd.ExcelWriter(response, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='Sheet1')
+
+        return response
+        
+
 
 class OrderDetailsViewset(viewsets.GenericViewSet):
     queryset = OrderDetailModel.objects.all()
@@ -206,3 +299,7 @@ class OrderDetailsViewset(viewsets.GenericViewSet):
             "data": None,
             "code": status.HTTP_200_OK
         }, status=status.HTTP_200_OK)
+    
+
+
+    

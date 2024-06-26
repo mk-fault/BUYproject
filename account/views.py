@@ -9,6 +9,7 @@ from rest_framework_simplejwt.views import TokenViewBase
 from .serializers import AccountSerializer,MyUserTokenSerializer
 from .permissions import IsAdminOrOwnerPutOnly
 from .models import AccountModel
+from .filters import AccountFilter
 from utils.response import CustomModelViewSet
 
 # Create your views here.
@@ -19,9 +20,10 @@ from utils.response import CustomModelViewSet
 # PATCH：重置密码(仅管理员)(默认密码123456)
 # PUT: 重置密码(需要传入username)(仅允许修改自己的密码)
 class AccountViewset(CustomModelViewSet):
-    queryset = AccountModel.objects.all().order_by('id')
+    queryset = AccountModel.objects.exclude(is_superuser=True).order_by('id')
     serializer_class = AccountSerializer
     permission_classes = [IsAdminOrOwnerPutOnly]
+    filterset_class = AccountFilter
 
 
 

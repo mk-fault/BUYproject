@@ -2,9 +2,9 @@ from rest_framework.permissions import BasePermission
 
 class IsAdminOrOwnerPutOnly(BasePermission):
     def has_permission(self, request, view):
-            if request.method in ['GET', 'POST', 'PATCH', 'DELETE']:
+            if request.method in ['POST', 'PATCH', 'DELETE']:
                 return request.user.is_superuser
-            elif request.method == 'PUT':
+            elif request.method in ['GET', 'PUT']:
                 return True
             else:
                 return False
