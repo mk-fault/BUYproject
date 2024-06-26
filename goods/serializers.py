@@ -51,13 +51,19 @@ class GoodsModelSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         price = validated_data.pop('price')
         instance = super().create(validated_data)
+
+        # 获取开始时间在当前时间之后的价格周期
         now_time = datetime.datetime.now()
         # now_time = "2024-07-18"
         cycle_queryset = PriceCycleModel.objects.filter(end_date__gt=now_time, status=True)
+
+        # 不存在价格周期则为商品添加上ori_price,下次添加价格周期时,会使用此价格
         if not cycle_queryset:
             instance.ori_price = price
             instance.save()
         else:
+
+            # 对于每一个周期,都为商品添加一个商品对象
             for cycle in cycle_queryset:
                 PriceModel.objects.create(product=instance, price=price, cycle=cycle, start_date=cycle.start_date, end_date=cycle.end_date,status=0)
         return instance
