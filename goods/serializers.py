@@ -19,7 +19,7 @@ class PriceModelSerializer(serializers.ModelSerializer):
         data['status'] = instance.get_status_display()
         product = instance.product
         data['product_name'] = product.name
-        data['product_unit'] = product.unit.name
+        # data['product_unit'] = product.unit.name
         data['product_category'] = product.category.name
         data['product_description'] = product.description
         return data
@@ -29,10 +29,10 @@ class PricePatchSerializer(serializers.ModelSerializer):
         model = PriceModel
         fields = ["price",]
 
-class UnitModelSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UnitModel
-        fields = ['id', 'name']
+# class UnitModelSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = UnitModel
+#         fields = ['id', 'name']
 
 class CategoryModelSerializer(serializers.ModelSerializer):
     class Meta:
@@ -45,7 +45,8 @@ class GoodsModelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = GoodsModel
-        fields = ['id', 'name', 'image', 'description', 'price', 'unit', 'category', 'status']
+        fields = ['id', 'name', 'image', 'description', 'price', 'category', 'status']
+        # fields = ['id', 'name', 'image', 'description', 'price', 'unit', 'category', 'status']
 
     # 创建一个商品时，为它生成目前以及日期往后已存在的价格周期的价格对象
     def create(self, validated_data):
@@ -77,7 +78,7 @@ class GoodsModelSerializer(serializers.ModelSerializer):
             data['price'] = None
         else:
             data['price'] = price.price
-        data['unit'] = instance.unit.name
+        # data['unit'] = instance.unit.name
         data['category'] = instance.category.name  
         return data
 

@@ -20,7 +20,7 @@ class CartModelSerializer(serializers.ModelSerializer):
         data['product_id'] = data.pop('product')
         data['description'] = product.description
         data['category'] = product.category.name
-        data['unit'] = product.unit.name
+        # data['unit'] = product.unit.name
         data['image'] = self.context['request'].build_absolute_uri(product.image.url) if product.image else None
         try:
             now_time = datetime.datetime.now()

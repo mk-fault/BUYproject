@@ -96,8 +96,11 @@ class CartViewset(myresponse.CustomModelViewSet):
 
             # 创建订单详情实例
             OrderDetailModel.objects.create(order=order, product_id=product.id, product_name=product.name,
-                                            description=product.description, unit=product.unit.name, category=product.category.name,
+                                            description=product.description, category=product.category.name,
                                             price=price.price, funds=cart.funds.name, order_quantity=cart.quantity)
+            # OrderDetailModel.objects.create(order=order, product_id=product.id, product_name=product.name,
+            #                                 description=product.description, unit=product.unit.name, category=product.category.name,
+            #                                 price=price.price, funds=cart.funds.name, order_quantity=cart.quantity)
             
             # 下单后删除购物车项
             cart.delete()
@@ -325,8 +328,8 @@ class OrdersViewset(viewsets.GenericViewSet,
                 detail_data = {
                     "商品编号": detail.product_id,
                     "商品名称": detail.product_name,
-                    "商品描述": detail.description,
-                    "计量单位": detail.unit,
+                    "商品规格": detail.description,
+                    # "计量单位": detail.unit,
                     "商品种类": detail.category,
                     "商品单价": detail.price,
                     "经费来源": detail.funds,

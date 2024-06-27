@@ -315,20 +315,20 @@ class PriceViewSet(viewsets.GenericViewSet,
 
 
 # 计量单位视图集
-class UnitViewSet(viewsets.GenericViewSet,
-                  myresponse.CustomCreateModelMixin,
-                  myresponse.CustomDestroyModelMixin,
-                  myresponse.CustomListModelMixin):
-    queryset = UnitModel.objects.all()
-    serializer_class = UnitModelSerializer
-    # permission_classes = [IsRole0]
+# class UnitViewSet(viewsets.GenericViewSet,
+#                   myresponse.CustomCreateModelMixin,
+#                   myresponse.CustomDestroyModelMixin,
+#                   myresponse.CustomListModelMixin):
+#     queryset = UnitModel.objects.all()
+#     serializer_class = UnitModelSerializer
+#     # permission_classes = [IsRole0]
 
-    # 非粮油公司组仅能查询
-    def get_permissions(self):
-        if self.action == 'list':
-            return [permissions.IsAuthenticated()]
-        else:
-            return [IsRole0()]
+#     # 非粮油公司组仅能查询
+#     def get_permissions(self):
+#         if self.action == 'list':
+#             return [permissions.IsAuthenticated()]
+#         else:
+#             return [IsRole0()]
         
 
 # 商品种类视图集

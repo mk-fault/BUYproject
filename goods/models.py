@@ -12,22 +12,22 @@ class CategoryModel(models.Model):
         verbose_name_plural = verbose_name
 
 # 商品计量单位模型
-class UnitModel(models.Model):
-    name = models.CharField(max_length=10, verbose_name='单位名称')
+# class UnitModel(models.Model):
+#     name = models.CharField(max_length=10, verbose_name='单位名称')
 
-    class Meta:
-        db_table = 'unit'
-        verbose_name = '单位'
-        verbose_name_plural = verbose_name
+#     class Meta:
+#         db_table = 'unit'
+#         verbose_name = '单位'
+#         verbose_name_plural = verbose_name
 
 # 商品模型
 class GoodsModel(models.Model):
     name = models.CharField(max_length=100, verbose_name='商品名称')
     category = models.ForeignKey(CategoryModel, on_delete=models.CASCADE, verbose_name='商品类别')
-    unit = models.ForeignKey(UnitModel, on_delete=models.CASCADE)
+    # unit = models.ForeignKey(UnitModel, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='goods/', verbose_name='商品图片',blank=True, null=True)
     ori_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="商品初始价格",blank=True,null=True)
-    description = models.TextField(verbose_name='商品描述')
+    description = models.TextField(verbose_name='商品规格')
     status = models.BooleanField(verbose_name="商品状态",default=True)
     create_at = models.DateTimeField(auto_now_add=True, verbose_name='添加时间')
     update_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
