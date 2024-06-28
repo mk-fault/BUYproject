@@ -41,16 +41,22 @@ class CategoryModelSerializer(serializers.ModelSerializer):
 
 class GoodsModelSerializer(serializers.ModelSerializer):
     price = serializers.DecimalField(max_digits=10, decimal_places=2, write_only=True)
+    price_check_1 = serializers.DecimalField(max_digits=10, decimal_places=2, write_only=True)
+    price_check_2 = serializers.DecimalField(max_digits=10, decimal_places=2, write_only=True)
+    price_check_avg = serializers.DecimalField(max_digits=10, decimal_places=2, write_only=True)
     status = serializers.BooleanField(default=True,write_only=True)
 
     class Meta:
         model = GoodsModel
-        fields = ['id', 'name', 'image', 'description', 'price', 'category', 'status']
+        fields = ['id', 'name', 'image', 'description', 'price', 'price_check_1', 'price_check_2', 'price_check_avg', 'category', 'status']
         # fields = ['id', 'name', 'image', 'description', 'price', 'unit', 'category', 'status']
 
     # 创建一个商品时，为它生成目前以及日期往后已存在的价格周期的价格对象
     def create(self, validated_data):
         price = validated_data.pop('price')
+        price_check_1 = validated_data.pop('price_check_1')
+        price_check_2 = validated_data.pop('price_check_2')
+        price_check_avg = validated_data.pop('price_check_avg')
         instance = super().create(validated_data)
 
         # 获取开始时间在当前时间之后的价格周期
@@ -61,12 +67,15 @@ class GoodsModelSerializer(serializers.ModelSerializer):
         # 不存在价格周期则为商品添加上ori_price,下次添加价格周期时,会使用此价格
         if not cycle_queryset:
             instance.ori_price = price
+            instance.ori_price_check_1 = price_check_1
+            instance.ori_price_check_2 = price_check_2
+            instance.ori_price_check_avg = price_check_avg
             instance.save()
         else:
 
-            # 对于每一个周期,都为商品添加一个商品对象
+            # 对于每一个周期,都为商品添加一个价格对象
             for cycle in cycle_queryset:
-                PriceModel.objects.create(product=instance, price=price, cycle=cycle, start_date=cycle.start_date, end_date=cycle.end_date,status=0)
+                PriceModel.objects.create(product=instance, price=price, price_check_1=price_check_1, price_check_2=price_check_2, price_check_avg=price_check_avg, cycle=cycle, start_date=cycle.start_date, end_date=cycle.end_date,status=0)
         return instance
 
     def to_representation(self, instance):
