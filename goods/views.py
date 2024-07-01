@@ -45,7 +45,7 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
         now_time = datetime.datetime.now()
         # now_time = "2024-07-18"
         # queryset = [product for product in queryset if product.prices.filter(status=2, start_date__lt=now_time, end_date__gt=now_time).exists()]
-        queryset = queryset.filter(status=True, prices__status=2, prices__start_date__lt=now_time, prices__end_date__gt=now_time).order_by('id').distinct()
+        queryset = queryset.filter(status=True, prices__status=2, prices__start_date__lte=now_time, prices__end_date__gte=now_time).order_by('id').distinct()
 
         return queryset
     
@@ -150,6 +150,9 @@ class PriceCycleViewSet(viewsets.GenericViewSet,
                 PriceModel.objects.create(
                     product=product,
                     price=product.ori_price,
+                    price_check_1 = product.ori_price_check_1,
+                    price_check_2 = product.ori_price_check_2,
+                    price_check_avg = product.ori_price_check_avg,
                     cycle=instance,
                     start_date=instance.start_date,
                     end_date=instance.end_date,
@@ -161,12 +164,22 @@ class PriceCycleViewSet(viewsets.GenericViewSet,
             else:
             # 使用上一个价格
                 try:
-                    old_price = PriceModel.objects.filter(product=product).order_by('-id').first().price
+                    old_price_obj = PriceModel.objects.filter(product=product).order_by('-id').first()
+                    old_price = old_price_obj.price
+                    old_price_check_1 = old_price_obj.price_check_1
+                    old_price_check_2 = old_price_obj.price_check_2
+                    old_price_check_avg = old_price_obj.price_check_avg
                 except:
                     old_price = 0
+                    old_price_check_1 = 0
+                    old_price_check_2 = 0
+                    old_price_check_avg = 0
                 PriceModel.objects.create(
                     product=product,
                     price=old_price,
+                    price_check_1 = old_price_check_1,
+                    price_check_2 = old_price_check_2,
+                    price_check_avg = old_price_check_avg,
                     cycle=instance,
                     start_date=instance.start_date,
                     end_date=instance.end_date,
@@ -214,7 +227,9 @@ class PriceViewSet(viewsets.GenericViewSet,
         queryset = super().get_queryset()
         # 粮油公司的queryset去除掉status=-99即已弃用的价格
         if self.request.user.role == '0':
-            queryset = queryset.exclude(status=-99).order_by('id')
+            # queryset = queryset.exclude(status=-99)
+            now_time = datetime.datetime.now()
+            queryset = queryset.exclude(status=-99).filter(start_date__lte=now_time, end_date__gte=now_time).order_by('id')
         # 教体局的queryset只查询未审核的价格
         else:
             queryset = queryset.filter(status=1).order_by('id')

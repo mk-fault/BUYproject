@@ -8,7 +8,7 @@ class PriceModelSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ['product', 'cycle', 'start_date', 'end_date', 'status', 'creater_id',
                             'create_time', 'reviewer_id', 'review_time']
-    
+        # read_only_fields = "__all__"
     
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -27,7 +27,7 @@ class PriceModelSerializer(serializers.ModelSerializer):
 class PricePatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = PriceModel
-        fields = ["price",]
+        fields = ["price", "price_check_1", "price_check_2", "price_check_avg"]
 
 # class UnitModelSerializer(serializers.ModelSerializer):
 #     class Meta:
@@ -62,7 +62,7 @@ class GoodsModelSerializer(serializers.ModelSerializer):
         # 获取开始时间在当前时间之后的价格周期
         now_time = datetime.datetime.now()
         # now_time = "2024-07-18"
-        cycle_queryset = PriceCycleModel.objects.filter(end_date__gt=now_time, status=True)
+        cycle_queryset = PriceCycleModel.objects.filter(end_date__gte=now_time, status=True)
 
         # 不存在价格周期则为商品添加上ori_price,下次添加价格周期时,会使用此价格
         if not cycle_queryset:
@@ -82,7 +82,7 @@ class GoodsModelSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         now_time = datetime.datetime.now()
         # now_time = "2024-07-18"
-        price = instance.prices.filter(status=2, start_date__lt=now_time, end_date__gt=now_time).first()
+        price = instance.prices.filter(status=2, start_date__lte=now_time, end_date__gte=now_time).order_by('-id').first()
         if not price:
             data['price'] = None
         else:

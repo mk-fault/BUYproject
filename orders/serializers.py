@@ -25,7 +25,7 @@ class CartModelSerializer(serializers.ModelSerializer):
         try:
             now_time = datetime.datetime.now()
             # now_time = "2024-07-18"
-            price = product.prices.filter(status=2, start_date__lt=now_time, end_date__gt=now_time).first()
+            price = product.prices.filter(status=2, start_date__lte=now_time, end_date__gte=now_time).order_by('-id').first()
             data['price'] = price.price  # Convert to integer
         except:
             instance.delete()

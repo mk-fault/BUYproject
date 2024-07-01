@@ -20,6 +20,7 @@ from utils import response as myresponse
 import datetime
 import pandas as pd
 from urllib.parse import quote
+import datetime
 # Create your views here.
 
 class FundsViewset(viewsets.GenericViewSet,
@@ -86,7 +87,7 @@ class CartViewset(myresponse.CustomModelViewSet):
             # 获取商品当前的价格
             now_time = datetime.datetime.now()
             # now_time = "2024-07-18"
-            price = product.prices.filter(status=2, start_date__lt=now_time, end_date__gt=now_time).first()
+            price = product.prices.filter(status=2, start_date__lte=now_time, end_date__gte=now_time).order_by('-id').first()
 
             # 商品没有可用价格则下单失败，将商品名添加到失败列表中
             if not price:
@@ -283,7 +284,12 @@ class OrdersViewset(viewsets.GenericViewSet,
                 }, status=status.HTTP_400_BAD_REQUEST)
             
             # 过滤在起止日期内的订单详情
-            queryset = queryset.filter(finish_time__range=[start_date, end_date])
+            # queryset = queryset.filter(finish_time__range=[start_date, end_date])
+            # 获取当天的最后时间
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1)
+
+            # 过滤在起止日期内的订单详情
+            queryset = queryset.filter(finish_time__gte=start_date, finish_time__lte=end_date)
 
             # username为当期用户
             username = request.user.username
@@ -307,7 +313,9 @@ class OrdersViewset(viewsets.GenericViewSet,
                 }, status=status.HTTP_401_UNAUTHORIZED)
             
             # 过滤某一学校在起止日期内的订单详情
-            queryset = queryset.filter(finish_time__range=[start_date, end_date], creater_id=school_id)
+            # queryset = queryset.filter(finish_time__range=[start_date, end_date], creater_id=school_id)
+            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1)
+            queryset = queryset.filter(finish_time__gte=start_date, finish_time__lte=end_date, creater_id=school_id)
 
             # username为对应school_id的用户名
             username = AccountModel.objects.filter(id=school_id).first().username
