@@ -30,7 +30,7 @@ class GoodsModel(models.Model):
     ori_price_check_1 = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="商品初始询价1",blank=True,null=True)
     ori_price_check_2 = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="商品初始询价2",blank=True,null=True)
     ori_price_check_avg = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="商品初始评价询价",blank=True,null=True)
-    description = models.TextField(verbose_name='商品规格')
+    description = models.CharField(max_length=100, verbose_name='商品规格')
     status = models.BooleanField(verbose_name="商品状态",default=True)
     create_at = models.DateTimeField(auto_now_add=True, verbose_name='添加时间')
     update_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
@@ -39,6 +39,7 @@ class GoodsModel(models.Model):
         db_table = 'goods'
         verbose_name = '商品'
         verbose_name_plural = verbose_name
+        # unique_together = (('name', 'description'),)
 
 # 价格周期模型
 class PriceCycleModel(models.Model):

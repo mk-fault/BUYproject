@@ -53,6 +53,8 @@ class GoodsModelSerializer(serializers.ModelSerializer):
 
     # 创建一个商品时，为它生成目前以及日期往后已存在的价格周期的价格对象
     def create(self, validated_data):
+        if GoodsModel.objects.filter(name=validated_data['name'], description=validated_data['description']).exists():
+            raise serializers.ValidationError("已存在该规格商品")
         price = validated_data.pop('price')
         price_check_1 = validated_data.pop('price_check_1')
         price_check_2 = validated_data.pop('price_check_2')
@@ -72,10 +74,9 @@ class GoodsModelSerializer(serializers.ModelSerializer):
             instance.ori_price_check_avg = price_check_avg
             instance.save()
         else:
-
             # 对于每一个周期,都为商品添加一个价格对象
             for cycle in cycle_queryset:
-                PriceModel.objects.create(product=instance, price=price, price_check_1=price_check_1, price_check_2=price_check_2, price_check_avg=price_check_avg, cycle=cycle, start_date=cycle.start_date, end_date=cycle.end_date,status=0)
+                PriceModel.objects.create(product=instance, price=price, price_check_1=price_check_1, price_check_2=price_check_2, price_check_avg=price_check_avg, cycle=cycle, start_date=cycle.start_date, end_date=cycle.end_date,status=1)
         return instance
 
     def to_representation(self, instance):
@@ -120,3 +121,4 @@ class PriceCycleModelSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['creater_id'] = self.context['request'].user.id
         return super().create(validated_data)
+

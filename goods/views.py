@@ -16,6 +16,7 @@ from orders.serializers import CartModelSerializer
 from utils import response as myresponse
 
 import datetime
+import pandas as pd
 
 # 商品视图集
 class GoodsViewSet(myresponse.CustomModelViewSet):
@@ -106,6 +107,98 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
                  "data": None,
                  "code": status.HTTP_201_CREATED}, status=status.HTTP_201_CREATED)
 
+    # 商品报价表格上传
+    @action(methods=['post'], detail=False)
+    def upload(self, request, pk=None):
+        f = request.data.get('file')
+        try:
+            df = pd.read_excel(f, sheet_name=None, skiprows=2)
+        except:
+            return Response({
+                "msg": "文件格式错误，请传入xlsx文件",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        errs = {
+            "edit":[],
+            "add":[]
+        }
+        # 遍历每一张工作簿，添加商品或修改商品价格
+        for sheet_name, sheet_data in df.items():
+            # 如果工作簿名不含“类”，则不是商品列表，跳过
+            if '类' not in sheet_name:
+                continue
+
+            # 获取类别名，如果当前类别不存在，则创建类别
+            category_name = sheet_name.strip()
+            category_obj, _ = CategoryModel.objects.get_or_create(name=category_name)
+            category_id = category_obj.id
+
+            # 处理df，价格保留两位小数
+            sheet_data = sheet_data.drop('序号', axis=1)
+            sheet_data = sheet_data.dropna()
+            col_name = ['name', 'description', 'price_check_1', 'price_check_2', 'price_check_avg', 'price_down5', 'price']
+            sheet_data.columns = col_name
+            sheet_data = sheet_data.drop('price_down5', axis=1)
+            sheet_data['price_check_1'] = sheet_data['price_check_1'].round(2)
+            sheet_data['price_check_2'] = sheet_data['price_check_2'].round(2)
+            sheet_data['price_check_avg'] = sheet_data['price_check_avg'].round(2)
+            sheet_data['price'] = sheet_data['price'].round(2)
+
+            # 遍历每一行数据，进行商品的添加或报价的修改提交
+            for _, row in sheet_data.iterrows():
+                row_dict = row.to_dict()
+                row_dict['category'] = category_id
+                # 如果商品及其规格存在的话，则修改并提交报价
+                if GoodsModel.objects.filter(name=row['name'], description=row['description']).exists():
+                    product_obj = GoodsModel.objects.filter(name=row['name'], description=row['description']).first()
+                    
+                    # 没有status=0的价格，表示已经提出报价或报价已经被处理，需要手动调整
+                    if not PriceModel.objects.filter(product=product_obj, status=0).exists():
+                        errs['edit'].append(row_dict)
+
+                    # 有status=0的价格，则修改报价，并提交申请
+                    else:
+                        price_obj = PriceModel.objects.filter(product=product_obj, status=0).order_by('-id').first()
+                        price_obj.price = row_dict['price']
+                        price_obj.price_check_1 = row_dict['price_check_1']
+                        price_obj.price_check_2 = row_dict['price_check_2']
+                        price_obj.price_check_avg = row_dict['price_check_avg']
+                        price_obj.status = 1
+                        price_obj.creater_id = request.user.id
+                        price_obj.create_time = datetime.datetime.now()
+                        price_obj.reviewer_id = None
+                        price_obj.review_time = None
+                        price_obj.save()
+
+
+                # 如果不存在，则添加作为新的商品
+                else:
+                    ser = GoodsModelSerializer(data=row_dict)
+                    if ser.is_valid():
+                        ser.save()
+                    else:
+                        print(ser.errors)
+                        errs['add'].append(row_dict)
+
+        # 如果添加过程存在错误，则返回错误信息
+        if errs['add'] or errs['edit']:
+            return Response({
+                "msg": "部分商品添加失败或报价修改失败",
+                "data": {
+                    "报价修改失败": errs['edit'],
+                    "商品添加失败": errs['add']
+                },
+                "code": status.HTTP_200_OK
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                "msg": "商品添加成功/报价修改成功",
+                "data": None,
+                "code": status.HTTP_200_OK
+            }, status=status.HTTP_200_OK)
+
 
 # 价格周期视图集
 class PriceCycleViewSet(viewsets.GenericViewSet,
@@ -145,7 +238,7 @@ class PriceCycleViewSet(viewsets.GenericViewSet,
         # 获得所有的商品
         product_queryset = GoodsModel.objects.all()
         for product in product_queryset:
-            # 当由ori_price时表示创建时没有可用价格周期的商品，使用ori_price
+            # 当由ori_price时表示创建时没有可用价格周期的商品，使用ori_price,并直接提交价格请求
             if product.ori_price is not None:
                 PriceModel.objects.create(
                     product=product,
@@ -156,9 +249,12 @@ class PriceCycleViewSet(viewsets.GenericViewSet,
                     cycle=instance,
                     start_date=instance.start_date,
                     end_date=instance.end_date,
-                    status=0
+                    status=1
                 )
                 product.ori_price = None
+                product.ori_price_check_1 = None
+                product.ori_price_check_2 = None
+                product.ori_price_check_avg = None
                 product.save()
             # 否则是已存在价格对象的商品，使用上一个价格
             else:
@@ -276,6 +372,41 @@ class PriceViewSet(viewsets.GenericViewSet,
         return Response({"msg": "已批准该价格",
                             "data": None,
                             "code": status.HTTP_200_OK}, status=status.HTTP_200_OK)
+
+    # 批量通过某些价格请求,传入价格对象id的列表
+    @action(methods=['post'], detail=False)
+    def multiaccept(self, request, pk=None):
+        price_list = request.data.get('price_ids')
+        if not price_list:
+            return Response({
+                "msg": "未传入价格对象id",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        err_list = []
+        for price_id in price_list:
+            try:
+                price = PriceModel.objects.get(id=price_id)
+                price.status = 2
+                price.reviewer_id = request.user.id
+                price.review_time = datetime.datetime.now()
+                price.save()
+            except:
+                err_list.append(price_id)
+                continue
+        if err_list:
+            return Response({
+                "msg": "部分价格请求批准失败",
+                "data": err_list,
+                "code": status.HTTP_200_OK
+            },status=status.HTTP_200_OK)
+        else:
+            return Response({
+                "msg": "价格请求批准成功",
+                "data": None,
+                "code": status.HTTP_200_OK
+            },status=status.HTTP_200_OK)
+
     
     # 拒绝某价格请求
     @action(detail=True, methods=['post'])
@@ -289,6 +420,41 @@ class PriceViewSet(viewsets.GenericViewSet,
         return Response({"msg": "已拒绝该价格",
                             "data": None,
                             "code": status.HTTP_200_OK}, status=status.HTTP_200_OK)
+    
+
+    # 批量拒绝某些价格请求,传入价格对象id的列表
+    @action(methods=['post'], detail=False)
+    def multireject(self, request, pk=None):
+        price_list = request.data.get('price_ids')
+        if not price_list:
+            return Response({
+                "msg": "未传入价格对象id",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        err_list = []
+        for price_id in price_list:
+            try:
+                price = PriceModel.objects.get(id=price_id)
+                price.status = -1
+                price.reviewer_id = request.user.id
+                price.review_time = datetime.datetime.now()
+                price.save()
+            except:
+                err_list.append(price_id)
+                continue
+        if err_list:
+            return Response({
+                "msg": "部分价格请求拒绝失败",
+                "data": err_list,
+                "code": status.HTTP_200_OK
+            },status=status.HTTP_200_OK)
+        else:
+            return Response({
+                "msg": "价格请求拒绝成功",
+                "data": None,
+                "code": status.HTTP_200_OK
+            },status=status.HTTP_200_OK)
     
 # class PriceRequestViewSet(viewsets.GenericViewSet,
 #                                myresponse.CustomListModelMixin):
@@ -362,6 +528,5 @@ class CategoryViewSet(viewsets.GenericViewSet,
         else:
             return [IsRole0()]
         
-
 
 

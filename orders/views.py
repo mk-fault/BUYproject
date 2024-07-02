@@ -69,7 +69,7 @@ class CartViewset(myresponse.CustomModelViewSet):
         if not item_list:
             return Response({"msg": "未选择购物车商品",
                                 "data": None,
-                                "code": status.HTTP_200_OK}, status=status.HTTP_200_OK)
+                                "code": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
         
         # 失败列表，存储下单失败的商品的名字
         fail_list = []
