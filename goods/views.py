@@ -25,6 +25,12 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
     pagination_class = GoodsPagination
     filterset_class = GoodsFilter
 
+    # 添加上下文
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['user_id'] = self.request.user.id
+        return context
+
     # 非粮油公司用户仅允许查看商品
     def get_permissions(self):
         if self.action == 'list' or self.action == 'retrieve':
@@ -111,6 +117,7 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
     @action(methods=['post'], detail=False)
     def upload(self, request, pk=None):
         f = request.data.get('file')
+        cycle_id = request.data.get('cycle')
         try:
             df = pd.read_excel(f, sheet_name=None, skiprows=2)
         except:
@@ -120,10 +127,26 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
                 "code": status.HTTP_400_BAD_REQUEST
             }, status=status.HTTP_400_BAD_REQUEST)
         
+        if cycle_id is None:
+            return Response({
+                "msg": "请传入价格周期ID",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        if not PriceCycleModel.objects.filter(id=cycle_id).exists():
+
+            return Response({
+                "msg": "所选周期不存在",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 错误信息，保存修改或添加失败的商品信息
         errs = {
             "edit":[],
             "add":[]
         }
+
         # 遍历每一张工作簿，添加商品或修改商品价格
         for sheet_name, sheet_data in df.items():
             # 如果工作簿名不含“类”，则不是商品列表，跳过
@@ -155,12 +178,12 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
                     product_obj = GoodsModel.objects.filter(name=row['name'], description=row['description']).first()
                     
                     # 没有status=0的价格，表示已经提出报价或报价已经被处理，需要手动调整
-                    if not PriceModel.objects.filter(product=product_obj, status=0).exists():
+                    if not PriceModel.objects.filter(product=product_obj, status=0, cycle__id=cycle_id).exists():
                         errs['edit'].append(row_dict)
 
                     # 有status=0的价格，则修改报价，并提交申请
                     else:
-                        price_obj = PriceModel.objects.filter(product=product_obj, status=0).order_by('-id').first()
+                        price_obj = PriceModel.objects.get(product=product_obj, status=0, cycle__id=cycle_id)
                         price_obj.price = row_dict['price']
                         price_obj.price_check_1 = row_dict['price_check_1']
                         price_obj.price_check_2 = row_dict['price_check_2']
@@ -175,7 +198,7 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
 
                 # 如果不存在，则添加作为新的商品
                 else:
-                    ser = GoodsModelSerializer(data=row_dict)
+                    ser = GoodsModelSerializer(data=row_dict, context={'user_id': request.user.id, 'cycle_id':cycle_id})
                     if ser.is_valid():
                         ser.save()
                     else:
@@ -185,7 +208,7 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
         # 如果添加过程存在错误，则返回错误信息
         if errs['add'] or errs['edit']:
             return Response({
-                "msg": "部分商品添加失败或报价修改失败",
+                "msg": "部分商品添加失败或报价修改失败，已提出报价请求或已审核的价格需手动调整",
                 "data": {
                     "报价修改失败": errs['edit'],
                     "商品添加失败": errs['add']
@@ -238,26 +261,27 @@ class PriceCycleViewSet(viewsets.GenericViewSet,
         # 获得所有的商品
         product_queryset = GoodsModel.objects.all()
         for product in product_queryset:
-            # 当由ori_price时表示创建时没有可用价格周期的商品，使用ori_price,并直接提交价格请求
-            if product.ori_price is not None:
-                PriceModel.objects.create(
-                    product=product,
-                    price=product.ori_price,
-                    price_check_1 = product.ori_price_check_1,
-                    price_check_2 = product.ori_price_check_2,
-                    price_check_avg = product.ori_price_check_avg,
-                    cycle=instance,
-                    start_date=instance.start_date,
-                    end_date=instance.end_date,
-                    status=1
-                )
-                product.ori_price = None
-                product.ori_price_check_1 = None
-                product.ori_price_check_2 = None
-                product.ori_price_check_avg = None
-                product.save()
-            # 否则是已存在价格对象的商品，使用上一个价格
-            else:
+            # # 当由ori_price时表示创建时没有可用价格周期的商品，使用ori_price,并直接提交价格请求
+            # if product.ori_price is not None:
+            #     PriceModel.objects.create(
+            #         product=product,
+            #         price=product.ori_price,
+            #         price_check_1 = product.ori_price_check_1,
+            #         price_check_2 = product.ori_price_check_2,
+            #         price_check_avg = product.ori_price_check_avg,
+            #         cycle=instance,
+            #         start_date=instance.start_date,
+            #         end_date=instance.end_date,
+            #         status=1
+            #     )
+            #     product.ori_price = None
+            #     product.ori_price_check_1 = None
+            #     product.ori_price_check_2 = None
+            #     product.ori_price_check_avg = None
+            #     product.save()
+            # # 否则是已存在价格对象的商品，使用上一个价格
+            # else:
+
             # 使用上一个价格
                 try:
                     old_price_obj = PriceModel.objects.filter(product=product).order_by('-id').first()
@@ -266,10 +290,13 @@ class PriceCycleViewSet(viewsets.GenericViewSet,
                     old_price_check_2 = old_price_obj.price_check_2
                     old_price_check_avg = old_price_obj.price_check_avg
                 except:
-                    old_price = 0
-                    old_price_check_1 = 0
-                    old_price_check_2 = 0
-                    old_price_check_avg = 0
+                    instance.delete()
+                    return Response({
+                        "msg": "价格周期创建错误",
+                        "data": None,
+                        "code": status.HTTP_400_BAD_REQUEST
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                
                 PriceModel.objects.create(
                     product=product,
                     price=old_price,
@@ -321,11 +348,11 @@ class PriceViewSet(viewsets.GenericViewSet,
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        # 粮油公司的queryset去除掉status=-99即已弃用的价格
+        # 粮油公司的queryset去除掉status=-99即已弃用的价格,和已过期的价格（结束时间在当前时间之前的）
         if self.request.user.role == '0':
             # queryset = queryset.exclude(status=-99)
             now_time = datetime.datetime.now()
-            queryset = queryset.exclude(status=-99).filter(start_date__lte=now_time, end_date__gte=now_time).order_by('id')
+            queryset = queryset.exclude(status=-99).filter(end_date__gte=now_time).order_by('id')
         # 教体局的queryset只查询未审核的价格
         else:
             queryset = queryset.filter(status=1).order_by('id')

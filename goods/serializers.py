@@ -59,7 +59,7 @@ class GoodsModelSerializer(serializers.ModelSerializer):
         price_check_1 = validated_data.pop('price_check_1')
         price_check_2 = validated_data.pop('price_check_2')
         price_check_avg = validated_data.pop('price_check_avg')
-        instance = super().create(validated_data)
+
 
         # 获取开始时间在当前时间之后的价格周期
         now_time = datetime.datetime.now()
@@ -67,16 +67,47 @@ class GoodsModelSerializer(serializers.ModelSerializer):
         cycle_queryset = PriceCycleModel.objects.filter(end_date__gte=now_time, status=True)
 
         # 不存在价格周期则为商品添加上ori_price,下次添加价格周期时,会使用此价格
+
         if not cycle_queryset:
-            instance.ori_price = price
-            instance.ori_price_check_1 = price_check_1
-            instance.ori_price_check_2 = price_check_2
-            instance.ori_price_check_avg = price_check_avg
-            instance.save()
+            # instance.ori_price = price
+            # instance.ori_price_check_1 = price_check_1
+            # instance.ori_price_check_2 = price_check_2
+            # instance.ori_price_check_avg = price_check_avg
+            # instance.save()
+            raise serializers.ValidationError("没有可用的价格周期，无法添加商品")
         else:
-            # 对于每一个周期,都为商品添加一个价格对象
-            for cycle in cycle_queryset:
-                PriceModel.objects.create(product=instance, price=price, price_check_1=price_check_1, price_check_2=price_check_2, price_check_avg=price_check_avg, cycle=cycle, start_date=cycle.start_date, end_date=cycle.end_date,status=1)
+            instance = super().create(validated_data)
+            try:
+                # Convert now_time to a date object
+                now_date = datetime.datetime.now().date()
+
+                # 对于每一个周期,都为商品添加一个价格对象
+                for cycle in cycle_queryset:
+
+                    # 如果是上传文件的方式添加的商品，则为所传入周期的价格提交价格请求，即设置价格状态为1（已提交），其他周期的价格状态设为0
+                    if self.context.get("cycle_id"):
+                        if cycle.id == int(self.context.get("cycle_id")):
+                            PriceModel.objects.create(product=instance, price=price, price_check_1=price_check_1, price_check_2=price_check_2,
+                                                price_check_avg=price_check_avg, cycle=cycle, start_date=cycle.start_date, end_date=cycle.end_date,
+                                                status=1, creater_id=self.context['user_id'], create_time=now_time)
+                        else:
+                            PriceModel.objects.create(product=instance, price=price, price_check_1=price_check_1, price_check_2=price_check_2,
+                                                price_check_avg=price_check_avg, cycle=cycle, start_date=cycle.start_date, end_date=cycle.end_date,
+                                                status=0) 
+                        
+                    # 如果是手动添加的商品，则为现在处于的周期的价格提交价格请求，即设置价格状态为1（已提交），未包括当前时间的周期的价格状态设为0
+                    else:
+                        if now_date > cycle.start_date and now_date < cycle.end_date:
+                            PriceModel.objects.create(product=instance, price=price, price_check_1=price_check_1, price_check_2=price_check_2,
+                                                price_check_avg=price_check_avg, cycle=cycle, start_date=cycle.start_date, end_date=cycle.end_date,
+                                                status=1, creater_id=self.context['user_id'], create_time=now_time)
+                        else:
+                            PriceModel.objects.create(product=instance, price=price, price_check_1=price_check_1, price_check_2=price_check_2,
+                                                price_check_avg=price_check_avg, cycle=cycle, start_date=cycle.start_date, end_date=cycle.end_date,
+                                                status=0)
+            except:
+                instance.delete()
+                raise serializers.ValidationError("为商品添加价格失败")
         return instance
 
     def to_representation(self, instance):
