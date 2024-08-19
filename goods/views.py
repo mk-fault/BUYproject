@@ -349,7 +349,7 @@ class PriceViewSet(viewsets.GenericViewSet,
     def get_queryset(self):
         queryset = super().get_queryset()
         # 粮油公司的queryset去除掉status=-99即已弃用的价格,和已过期的价格（结束时间在当前时间之前的）
-        if self.request.user.role == '0':
+        if self.request.user.role == '0' or self.request.user.role == '1':
             # queryset = queryset.exclude(status=-99)
             now_time = datetime.datetime.now()
             queryset = queryset.exclude(status=-99).filter(end_date__gte=now_time).order_by('id')

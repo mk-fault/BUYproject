@@ -14,7 +14,8 @@ class PriceFilter(filters.FilterSet):
 
 class GoodsFilter(filters.FilterSet):
     category_id = filters.NumberFilter(field_name='category__id')
+    product_name = filters.CharFilter(field_name="name", lookup_expr='icontains')
 
     class Meta:
         model = GoodsModel
-        fields = ['category_id',]
+        fields = ['category_id', 'product_name']

@@ -13,7 +13,7 @@ class AccountSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AccountModel
-        fields = ('id','username','password', 'role')
+        fields = ('id','username','password', 'role', 'first_name')
         read_only_fields = ('id',)
         extra_kwargs = {
             'password':{
@@ -23,15 +23,23 @@ class AccountSerializer(serializers.ModelSerializer):
             },
             'role':{
                 'required':False,
+            },
+            'first_name':{
+                'required':False,
             }
         }
 
     def validate(self, attrs):
         password = attrs.get('password')
         role = attrs.get('role')
+        first_name = attrs.get('first_name')
         # 判断账户类型是否合法
         if role is not None and role not in [0,1,2,3,4,5]:
             raise serializers.ValidationError('账户类型不合法')
+
+        # 判断用户名称是否为空
+        if first_name is None or first_name == "":
+            raise serializers.ValidationError('账户名称不能为空')
 
         # 没有密码则为添加教师或重置密码，无需校验
         if not password:
@@ -47,6 +55,8 @@ class AccountSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         if 'role' not in validated_data:
             raise serializers.ValidationError('未传入账户类型')
+        if 'first_name' not in validated_data:
+            raise serializers.ValidationError('未传入账户名称')
         validated_data['password'] = self.default_password  # 添加账户，设置为默认密码
         return AccountModel.objects.create_user(**validated_data)
     
@@ -58,6 +68,10 @@ class AccountSerializer(serializers.ModelSerializer):
             validated_data['role'] = instance.role
         else:
             raise serializers.ValidationError('不允许修改账户类型')
+        if 'first_name' not in validated_data:
+            validated_data['first_name'] = instance.first_name
+        else:
+            raise serializers.ValidationError('不允许修改账户名称')
         instance.save()
         return instance
     
@@ -74,6 +88,7 @@ class MyUserTokenSerializer(TokenObtainPairSerializer):
         data['id'] = self.user.id
         data['username'] = self.user.username
         data['role'] = self.user.role
+        data['first_name'] = self.user.first_name
 
         # 判断是否为简单密码
         if AccountModel.check_password(self.user,'123456'):

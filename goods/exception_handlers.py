@@ -8,8 +8,12 @@ def custom_exception_handler(exc, context):
 
     # 如果异常是 ValidationError，定制响应格式
     if isinstance(exc, ValidationError):
+        if isinstance(exc.detail, list):
+            err_msg = exc.detail[0]
+        else:
+            err_msg = exc.detail
         custom_response_data = {
-            "msg": exc.detail[0],
+            "msg": err_msg,
             "data": None,
             "code": response.status_code
         }

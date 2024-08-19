@@ -67,7 +67,7 @@ class PriceModel(models.Model):
     start_date = models.DateField(verbose_name="价格开始时间")
     end_date = models.DateField(verbose_name="价格结束时间")
     status_choice = (("0", "未申报"), ("1", "未审核"), ("2", "已审核"),("-1", "已拒绝"),("-99", "已弃用"))
-    status = models.CharField(choices=status_choice, max_length=10, verbose_name="报价状态", default=0)
+    status = models.CharField(choices=status_choice, max_length=10, verbose_name="报价状态", default=0, db_index=True)
     creater_id = models.BigIntegerField(verbose_name="报价人ID", blank=True, null=True, default=None)
     create_time = models.DateTimeField(verbose_name="报价申报时间", blank=True, null=True, default=None)
     reviewer_id = models.BigIntegerField(verbose_name="审核人ID", blank=True, null=True, default=None)
