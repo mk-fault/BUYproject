@@ -24,8 +24,10 @@ class CategoryModel(models.Model):
 class GoodsModel(models.Model):
     name = models.CharField(max_length=100, verbose_name='商品名称')
     category = models.ForeignKey(CategoryModel, on_delete=models.CASCADE, verbose_name='商品类别')
+    brand = models.CharField(max_length=100, verbose_name='商品品牌')
     # unit = models.ForeignKey(UnitModel, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='goods/', verbose_name='商品图片',blank=True, null=True)
+    license = models.ImageField(upload_to='license/', verbose_name='商品资质', blank=True, null=True)
     # ori_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="商品初始价格(下调5%)",blank=True,null=True)
     # ori_price_check_1 = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="商品初始询价1",blank=True,null=True)
     # ori_price_check_2 = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="商品初始询价2",blank=True,null=True)

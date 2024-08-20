@@ -22,7 +22,7 @@ class CartModel(models.Model):
         verbose_name_plural = verbose_name
 
 class OrdersModel(models.Model):
-    status_choice = (("0", "未接单"), ("1", "未发货"), ("2", "配送中"), ("3", "配送完成"), ("4", "订单完成"), ("-1", "撤销"))
+    status_choice = (("0", "待接单"), ("1", "待发货"), ("2", "配送中"), ("3", "配送完成"), ("4", "已收货待复核"), ("5", "订单有疑问"), ("6", "订单完成"), ("-1", "撤销"))
     status = models.CharField(max_length=10, choices=status_choice, verbose_name="订单状态", db_index=True)
     creater_id = models.IntegerField(verbose_name="订单创建人ID", db_index=True)
     create_time = models.DateTimeField(auto_now_add=True, verbose_name="订单创建时间")
