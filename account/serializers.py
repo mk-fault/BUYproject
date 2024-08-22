@@ -21,6 +21,9 @@ class AccountSerializer(serializers.ModelSerializer):
                 'required':False,
                 'default':None
             },
+            'username':{
+                'write_only':True
+            },
             'role':{
                 'required':False,
             },
@@ -36,10 +39,6 @@ class AccountSerializer(serializers.ModelSerializer):
         # 判断账户类型是否合法
         if role is not None and role not in [0,1,2,3,4,5]:
             raise serializers.ValidationError('账户类型不合法')
-
-        # 判断用户名称是否为空
-        if first_name is None or first_name == "":
-            raise serializers.ValidationError('账户名称不能为空')
 
         # 没有密码则为添加教师或重置密码，无需校验
         if not password:
@@ -57,6 +56,10 @@ class AccountSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('未传入账户类型')
         if 'first_name' not in validated_data:
             raise serializers.ValidationError('未传入账户名称')
+        if validated_data['first_name'] == "":
+            raise serializers.ValidationError('账户名称不能为空')
+        if validated_data['username'] == "":
+            raise serializers.ValidationError('登录用户名不能为空')
         validated_data['password'] = self.default_password  # 添加账户，设置为默认密码
         return AccountModel.objects.create_user(**validated_data)
     

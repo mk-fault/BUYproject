@@ -428,7 +428,7 @@ class OrdersViewset(viewsets.GenericViewSet,
             # 过滤在起止日期内的订单详情
             queryset = queryset.filter(finish_time__gte=start_date, finish_time__lte=_end_date)
 
-            # username为当期用户
+            # first_name为当期用户
             first_name = request.user.first_name
         
         # 如果传入的school_id不是学校账户则返回错误
@@ -454,7 +454,7 @@ class OrdersViewset(viewsets.GenericViewSet,
             _end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1)
             queryset = queryset.filter(finish_time__gte=start_date, finish_time__lte=_end_date, creater_id=school_id)
 
-            # username为对应school_id的用户名
+            # first_name为对应school_id的用户名
             first_name = AccountModel.objects.filter(id=school_id).first().first_name
 
         # 如果查询结果为空，表示时间段内没有订单
