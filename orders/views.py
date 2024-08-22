@@ -4,11 +4,12 @@ import pandas as pd
 from urllib.parse import quote
 import datetime
 import xlsxwriter
+import os
 
 from django.shortcuts import render
 from django.http import FileResponse, HttpResponse, StreamingHttpResponse
 from django.utils.encoding import escape_uri_path
-from django.conf.global_settings import MEDIA_ROOT
+from django.conf import settings
 
 from rest_framework import viewsets
 from rest_framework import permissions
@@ -128,11 +129,6 @@ class CartViewset(myresponse.CustomModelViewSet):
                 fail_list.append(product.name)
             # 下单后删除购物车项
         
-        if order.status != "0":
-            return Response({
-                "msg": "存在操作冲突，请稍后重试",
-                "data": None,
-                "code": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
 
         # 如果全失败，则删除创建的订单实例
         if not order.details:
@@ -152,6 +148,8 @@ class CartViewset(myresponse.CustomModelViewSet):
         # 添加订单的下单总数
         order.product_num = order.details.count()
         order.save()
+        for cart in cart_del_list:
+            cart.delete()
 
         # 返回响应
         return Response({"msg": "商品下单成功",
@@ -180,6 +178,8 @@ class OrdersViewset(viewsets.GenericViewSet,
         # 仅粮油公司组能进行接单、发货、送达操作
         if self.action in ["accept", "ship", "delivered", "argue", "agree", "gendeliver"]:
             return [mypermissions.IsRole0()]
+        elif self.action in ["gendoc"]:
+            return [mypermissions.IsRole1()]
         else:
             return [permissions.IsAuthenticated()]
     
@@ -423,10 +423,10 @@ class OrdersViewset(viewsets.GenericViewSet,
             # 过滤在起止日期内的订单详情
             # queryset = queryset.filter(finish_time__range=[start_date, end_date])
             # 获取当天的最后时间
-            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1)
+            _end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1)
 
             # 过滤在起止日期内的订单详情
-            queryset = queryset.filter(finish_time__gte=start_date, finish_time__lte=end_date)
+            queryset = queryset.filter(finish_time__gte=start_date, finish_time__lte=_end_date)
 
             # username为当期用户
             first_name = request.user.first_name
@@ -451,8 +451,8 @@ class OrdersViewset(viewsets.GenericViewSet,
             
             # 过滤某一学校在起止日期内的订单详情
             # queryset = queryset.filter(finish_time__range=[start_date, end_date], creater_id=school_id)
-            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1)
-            queryset = queryset.filter(finish_time__gte=start_date, finish_time__lte=end_date, creater_id=school_id)
+            _end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1)
+            queryset = queryset.filter(finish_time__gte=start_date, finish_time__lte=_end_date, creater_id=school_id)
 
             # username为对应school_id的用户名
             first_name = AccountModel.objects.filter(id=school_id).first().first_name
@@ -474,7 +474,7 @@ class OrdersViewset(viewsets.GenericViewSet,
                     "商品编号": detail.product_id,
                     "商品名称": detail.product_name,
                     "商品规格": detail.description,
-                    "计量单位": detail.unit,
+                    "商品品牌": detail.brand,
                     "商品种类": detail.category,
                     "商品单价": detail.price,
                     "经费来源": detail.funds,
@@ -488,10 +488,10 @@ class OrdersViewset(viewsets.GenericViewSet,
 
         # 返回文件响应
         df = pd.DataFrame(data)
-        file_name = f"{first_name}_{start_date}~{end_date}_订单报表"
+        file_name = f"{first_name}_{start_date}~{end_date}_订单报表.xlsx"
 
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = f'attachment; filename="{quote(file_name)}.xlsx"'
+        response['Content-Disposition'] = f'attachment; filename="{quote(file_name)}"'
 
         with pd.ExcelWriter(response, engine='openpyxl') as writer:
             df.to_excel(writer, index=False, sheet_name='Sheet1')
@@ -691,11 +691,137 @@ class OrdersViewset(viewsets.GenericViewSet,
 
         output.seek(0)
         response = HttpResponse(output, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = 'attachment; filename="example.xlsx"'
+        file_name = f"{first_name}_{deliver_date}_送货单.xlsx"
+        response['Content-Disposition'] = f'attachment; filename="{quote(file_name)}"'
 
         return response
 
+    @action(methods=['post'], detail=False)
+    def gendoc(self, request, pk=None):
+        from docx import Document
+        from docx.shared import Pt  # 用于设置字体大小
+        from docx.oxml.ns import qn  # 用于设置字体
 
+        # 定位模板文件
+        output = BytesIO()
+        template_path = os.path.join(settings.MEDIA_ROOT, 'template.docx')
+        doc = Document(template_path)
+
+        # 接收参数
+        school_id = request.data.get("school_id")
+        start_date = request.data.get("start_date")
+        end_date = request.data.get("end_date")
+        if not school_id:
+            return Response({
+                "msg": "请传入学校ID",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        if not start_date or not end_date:
+            return Response({
+                "msg": "请传入起止时间",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 生成填充数据
+        try:
+            school = AccountModel.objects.get(id=school_id)
+        except:
+            return Response({
+                "msg": "ID对应的学校不存在",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if school.role != "2":
+            return Response({
+                "msg": "ID对应的学校不存在",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 获取学校名称
+        school_name = school.first_name
+        
+        # 结束日期加一天，避免漏掉最后一天的数据
+        _end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1)
+
+        # 获取查询集
+        queryset = self.get_queryset()
+        queryset = queryset.filter(finish_time__gte=start_date, finish_time__lte=_end_date, creater_id=school_id)
+
+        if not queryset:
+            return Response({
+                "msg": "未查询到时间段内订单",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # 生成日期表示
+        start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+        end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+        start_date = start_date.strftime("%Y 年 %m 月 %d 日")
+        end_date = end_date.strftime("%Y 年 %m 月 %d 日")
+        date = f"{start_date}  ------------ {end_date}"
+
+        # 获取经费情况
+        funds_dic = {}
+        for order in queryset:
+            order_details = order.details.all()
+            for detail in order_details:
+                now_fund = detail.funds
+                funds_dic[now_fund] = funds_dic.get(now_fund, 0) + detail.cost
+        
+        total = 0
+        for k,v in funds_dic.items():
+            total += v
+
+        """
+        以下为生成docx
+        """
+        # 遍历文档中的所有表格
+        for table in doc.tables:
+            for row in table.rows:
+                if row.cells[0].text == "学校名称":
+                    row.cells[1].text = ''
+                    run = row.cells[1].paragraphs[0].add_run(school_name)
+                    run.font.name = '宋体'  # 设置字体
+                    run._element.rPr.rFonts.set(qn('w:eastAsia'), '宋体')  # 强制设置中文字体为宋体
+                    run.font.size = Pt(11)  # 设置字体大小为11号
+                if row.cells[0].text == "结算时间":
+                    row.cells[1].text = ''
+                    run = row.cells[1].paragraphs[0].add_run(date)
+                    run.font.name = '宋体'  # 设置字体
+                    run._element.rPr.rFonts.set(qn('w:eastAsia'), '宋体')  # 强制设置中文字体为宋体
+                    run.font.size = Pt(11)  # 设置字体大小为11号
+                if row.cells[0].text == "结算资金（元）":
+                    if row.cells[1].text == "以上三项合计金额：":
+                        res = row.cells[1].text + str(total)
+                        row.cells[1].text = ''
+                        run = row.cells[1].paragraphs[0].add_run(res)
+                        run.font.name = '宋体'  # 设置字体
+                        run._element.rPr.rFonts.set(qn('w:eastAsia'), '宋体')  # 强制设置中文字体为宋体
+                        run.font.size = Pt(11)  # 设置字体大小为11号
+                    else:
+                        for k, v in funds_dic.items():
+                            if k in row.cells[1].text:
+                                res = row.cells[1].text + str(v)
+                                row.cells[1].text = ''
+                                run = row.cells[1].paragraphs[0].add_run(res)
+                                run.font.name = '宋体'  # 设置字体
+                                run._element.rPr.rFonts.set(qn('w:eastAsia'), '宋体')  # 强制设置中文字体为宋体
+                                run.font.size = Pt(11)  # 设置字体大小为11号
+        
+        doc.save(output)
+        output.seek(0)
+        response = HttpResponse(output, content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+        file_name = f"{start_date}~{end_date}_{school_name}经费情况.docx"
+        response['Content-Disposition'] = f'attachment; filename={quote(file_name)}'
+
+
+        return response
+    
 class OrderDetailsViewset(viewsets.GenericViewSet):
     """
     仅用于确认收货，无CRUD方法
