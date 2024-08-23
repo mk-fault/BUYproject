@@ -24,7 +24,7 @@ class CategoryModel(models.Model):
 class GoodsModel(models.Model):
     name = models.CharField(max_length=100, verbose_name='商品名称')
     category = models.ForeignKey(CategoryModel, on_delete=models.CASCADE, verbose_name='商品类别')
-    brand = models.CharField(max_length=100, verbose_name='商品品牌')
+    brand = models.CharField(max_length=100, verbose_name='商品品牌', blank=True, null=True)
     # unit = models.ForeignKey(UnitModel, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='goods/', verbose_name='商品图片',blank=True, null=True)
     license = models.ImageField(upload_to='license/', verbose_name='商品资质', blank=True, null=True)

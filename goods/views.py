@@ -160,8 +160,8 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
 
             # 处理df，价格保留两位小数
             sheet_data = sheet_data.drop('序号', axis=1)
-            sheet_data = sheet_data.dropna()
-            col_name = ['name', 'brand', 'description', 'price_check_1', 'price_check_2', 'price_check_avg', 'price_down5', 'price']
+            # sheet_data = sheet_data.dropna()
+            col_name = ['brand', 'name', 'description', 'price_check_1', 'price_check_2', 'price_check_avg', 'price_down5', 'price']
             sheet_data.columns = col_name
             sheet_data = sheet_data.drop('price_down5', axis=1)
             sheet_data['price_check_1'] = sheet_data['price_check_1'].round(2)
@@ -171,8 +171,11 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
 
             # 遍历每一行数据，进行商品的添加或报价的修改提交
             for _, row in sheet_data.iterrows():
+                if row.isnull().all():
+                    break
                 row_dict = row.to_dict()
                 row_dict['category'] = category_id
+                row_dict['brand'] = None if pd.isnull(row_dict['brand']) else row_dict['brand']
                 # 如果商品及其规格存在的话，则修改并提交报价
                 if GoodsModel.objects.filter(name=row['name'], brand=row['brand'], description=row['description']).exists():
                     product_obj = GoodsModel.objects.filter(name=row['name'], brand=row['brand'], description=row['description']).first()
