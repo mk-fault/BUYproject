@@ -161,7 +161,7 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
             # 处理df，价格保留两位小数
             sheet_data = sheet_data.drop('序号', axis=1)
             sheet_data = sheet_data.dropna()
-            col_name = ['name', 'description', 'price_check_1', 'price_check_2', 'price_check_avg', 'price_down5', 'price']
+            col_name = ['name', 'brand', 'description', 'price_check_1', 'price_check_2', 'price_check_avg', 'price_down5', 'price']
             sheet_data.columns = col_name
             sheet_data = sheet_data.drop('price_down5', axis=1)
             sheet_data['price_check_1'] = sheet_data['price_check_1'].round(2)
@@ -174,8 +174,8 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
                 row_dict = row.to_dict()
                 row_dict['category'] = category_id
                 # 如果商品及其规格存在的话，则修改并提交报价
-                if GoodsModel.objects.filter(name=row['name'], description=row['description']).exists():
-                    product_obj = GoodsModel.objects.filter(name=row['name'], description=row['description']).first()
+                if GoodsModel.objects.filter(name=row['name'], brand=row['brand'], description=row['description']).exists():
+                    product_obj = GoodsModel.objects.filter(name=row['name'], brand=row['brand'], description=row['description']).first()
                     
                     # 没有status=0的价格，表示已经提出报价或报价已经被处理，需要手动调整
                     if not PriceModel.objects.filter(product=product_obj, status=0, cycle__id=cycle_id).exists():

@@ -20,7 +20,7 @@ class CartModelSerializer(serializers.ModelSerializer):
         data['product_id'] = data.pop('product')
         data['description'] = product.description
         data['category'] = product.category.name
-        # data['unit'] = product.unit.name
+        data['brand'] = product.brand
         data['image'] = self.context['request'].build_absolute_uri(product.image.url) if product.image else None
         try:
             now_time = datetime.datetime.now()
@@ -38,6 +38,11 @@ class CartPatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = CartModel
         fields = ["quantity", "funds"]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['funds'] = instance.funds.name
+        return data
             
 
 

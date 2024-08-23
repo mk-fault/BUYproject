@@ -178,7 +178,7 @@ class OrdersViewset(viewsets.GenericViewSet,
         # 仅粮油公司组能进行接单、发货、送达操作
         if self.action in ["accept", "ship", "delivered", "argue", "agree", "gendeliver"]:
             return [mypermissions.IsRole0()]
-        elif self.action in ["gendoc"]:
+        elif self.action in ["genfunds"]:
             return [mypermissions.IsRole1()]
         else:
             return [permissions.IsAuthenticated()]
@@ -360,9 +360,16 @@ class OrdersViewset(viewsets.GenericViewSet,
 
         # 接收确认收货的订单详情id和收货数量对象
         recv = request.data.get("recv")
+        if not recv:
+            return Response({
+                "msg": "请传入收货情况",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
 
-        # 遍历json进行收货
-        for detail_id, recv_num in recv.items():
+        for data in recv:
+            detail_id = data['id']
+            received_quantity = data['received_quantity']
             try:
                 item = OrderDetailModel.objects.get(id=detail_id)
                 # 如果该订单详情不属于该订单，则加入错误列表
@@ -372,13 +379,32 @@ class OrdersViewset(viewsets.GenericViewSet,
                 if item.received_quantity is None:
                     order.finish_num += 1
                 # 更新收货数量和总计价格、时间
-                item.received_quantity = recv_num
-                item.cost = float(recv_num) * float(item.price)
+                item.received_quantity = received_quantity
+                item.cost = float(received_quantity) * float(item.price)
                 item.recipient_id = request.user.id
                 item.recipient_time = datetime.datetime.now()
                 item.save()
             except:
                 err_list.append(detail_id)
+
+        # # 遍历json进行收货
+        # for detail_id, recv_num in recv.items():
+        #     try:
+        #         item = OrderDetailModel.objects.get(id=detail_id)
+        #         # 如果该订单详情不属于该订单，则加入错误列表
+        #         if item.order != order:
+        #             raise ValueError
+        #         # 当该项之前未有过收货行为时，增加已收货条目数
+        #         if item.received_quantity is None:
+        #             order.finish_num += 1
+        #         # 更新收货数量和总计价格、时间
+        #         item.received_quantity = recv_num
+        #         item.cost = float(recv_num) * float(item.price)
+        #         item.recipient_id = request.user.id
+        #         item.recipient_time = datetime.datetime.now()
+        #         item.save()
+        #     except:
+        #         err_list.append(detail_id)
 
         # 当已收货条目和待收获条目相等时，视为订单全部收货，修改订单状态为待复核
         if order.finish_num == order.product_num:
@@ -387,7 +413,7 @@ class OrdersViewset(viewsets.GenericViewSet,
 
         if len(err_list) != 0:
             return Response({
-                "msg": "部分商品收货失败，请检查订单详情号是否正确",
+                "msg": "部分商品收货失败，请检查订单详情号和对应订单号是否正确",
                 "data": err_list,
                 "code": status.HTTP_200_OK
             }, status=status.HTTP_200_OK)
@@ -697,14 +723,14 @@ class OrdersViewset(viewsets.GenericViewSet,
         return response
 
     @action(methods=['post'], detail=False)
-    def gendoc(self, request, pk=None):
+    def genfunds(self, request, pk=None):
         from docx import Document
         from docx.shared import Pt  # 用于设置字体大小
         from docx.oxml.ns import qn  # 用于设置字体
 
         # 定位模板文件
         output = BytesIO()
-        template_path = os.path.join(settings.MEDIA_ROOT, 'template.docx')
+        template_path = os.path.join(settings.MEDIA_ROOT, 'funds_template.docx')
         doc = Document(template_path)
 
         # 接收参数
@@ -761,9 +787,11 @@ class OrdersViewset(viewsets.GenericViewSet,
         # 生成日期表示
         start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
         end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
-        start_date = start_date.strftime("%Y 年 %m 月 %d 日")
-        end_date = end_date.strftime("%Y 年 %m 月 %d 日")
-        date = f"{start_date}  ------------ {end_date}"
+        start_date2 = start_date.strftime("%Y 年 %m 月 %d 日")
+        end_date2 = end_date.strftime("%Y 年 %m 月 %d 日")
+        start_date = start_date.strftime("%Y-%m-%d")
+        end_date = end_date.strftime("%Y-%m-%d")
+        date = f"{start_date2}  ------------ {end_date2}"
 
         # 获取经费情况
         funds_dic = {}

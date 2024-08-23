@@ -21,9 +21,6 @@ class AccountSerializer(serializers.ModelSerializer):
                 'required':False,
                 'default':None
             },
-            'username':{
-                'write_only':True
-            },
             'role':{
                 'required':False,
             },
