@@ -44,7 +44,7 @@ class OrderDetailModel(models.Model):
     order = models.ForeignKey(OrdersModel, related_name='details',on_delete=models.CASCADE, verbose_name="订单实例")
     product_id = models.IntegerField(verbose_name="商品ID")
     product_name = models.CharField(max_length=100, verbose_name="商品名称")
-    brand = models.CharField(max_length=100, verbose_name="商品品牌")
+    brand = models.CharField(max_length=100, verbose_name="商品品牌", blank=True, null=True)
     description = models.TextField(verbose_name="商品规格")
     # unit = models.CharField(max_length=100, verbose_name="商品类别")
     category = models.CharField(max_length=100, verbose_name="商品类别")
