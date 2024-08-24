@@ -89,7 +89,7 @@ class CartViewset(myresponse.CustomModelViewSet):
         success = 0
 
         # 创建订单实例
-        order, _ = OrdersModel.objects.get_or_create(status=0, creater_id=user_id, deliver_date=deliver_date)
+        order, is_create = OrdersModel.objects.get_or_create(status=0, creater_id=user_id, deliver_date=deliver_date)
 
         cart_del_list = []
         # 对每一个购物车项，创建一个订单详情实例，并关联在订单实例上
@@ -98,12 +98,19 @@ class CartViewset(myresponse.CustomModelViewSet):
             try:
                 cart = CartModel.objects.get(id=item, creater_id=user_id)
             except:
-                if success == 0:
+                if success == 0 and is_create:
                     order.delete()
-                return Response({"msg": "购物车商品不存在，请刷新后重试",
+                return Response({"msg": "购物车项不存在，请刷新后重试",
                                     "data": None,
                                     "code": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
-            product = cart.product
+            try:
+                product = cart.product
+            except:
+                if success == 0 and is_create:
+                    order.delete()
+                return Response({"msg": "商品不存在，请刷新后重试",
+                                    "data": None,
+                                    "code": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
 
             # 获取商品当前的价格
             now_time = datetime.datetime.now()

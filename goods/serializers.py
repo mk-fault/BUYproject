@@ -17,7 +17,11 @@ class PriceModelSerializer(serializers.ModelSerializer):
         data['cycle_name'] = instance.cycle.name
         data['status_code'] = data.pop('status')
         data['status'] = instance.get_status_display()
-        product = instance.product
+        try:
+            product = instance.product
+        except:
+            instance.delete()
+            raise serializers.ValidationError("商品不存在, 价格对象已删除")
         data['product_name'] = product.name
         data['product_brand'] = product.brand
         data['product_category'] = product.category.name
