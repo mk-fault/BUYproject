@@ -15,7 +15,11 @@ class CartModelSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        product = instance.product
+        try:
+            product = instance.product
+        except:
+            instance.delete()
+            raise serializers.ValidationError(f"商品不存在，刷新以删除购物车商品")
         data['product_name'] = product.name
         data['product_id'] = data.pop('product')
         data['description'] = product.description
@@ -29,7 +33,7 @@ class CartModelSerializer(serializers.ModelSerializer):
             data['price'] = price.price  # Convert to integer
         except:
             instance.delete()
-            raise serializers.ValidationError(f"Cart item {product.name} dont have a price,frush to apply the delete")
+            raise serializers.ValidationError(f"{product.name}不存在可用价格，刷新以删除购物车商品")
         data['funds'] = instance.funds.name
         data['tolto_price'] = round(float(data['price']) * float(data['quantity']), 2)  # Convert to floats and round to 2 decimal places
         return data
