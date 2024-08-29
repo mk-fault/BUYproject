@@ -43,11 +43,12 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'django_filters',
+    'django_cleanup.apps.CleanupConfig', # 清理无用文件
     'coreapi',
     'goods',
     'account',
     'orders',
-    'django_cleanup.apps.CleanupConfig', # 清理无用文件
+    
 ]
 
 MIDDLEWARE = [

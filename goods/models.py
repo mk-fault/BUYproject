@@ -1,5 +1,7 @@
 from django.db import models
-
+import os
+import shutil
+from django.conf import settings
 # Create your models here.
 
 # 商品种类模型
@@ -25,13 +27,8 @@ class GoodsModel(models.Model):
     name = models.CharField(max_length=100, verbose_name='商品名称')
     category = models.ForeignKey(CategoryModel, on_delete=models.CASCADE, verbose_name='商品类别')
     brand = models.CharField(max_length=100, verbose_name='商品品牌', blank=True, null=True)
-    # unit = models.ForeignKey(UnitModel, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='goods/', verbose_name='商品图片',blank=True, null=True)
     license = models.ImageField(upload_to='license/', verbose_name='商品资质', blank=True, null=True)
-    # ori_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="商品初始价格(下调5%)",blank=True,null=True)
-    # ori_price_check_1 = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="商品初始询价1",blank=True,null=True)
-    # ori_price_check_2 = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="商品初始询价2",blank=True,null=True)
-    # ori_price_check_avg = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="商品初始评价询价",blank=True,null=True)
     description = models.CharField(max_length=100, verbose_name='商品规格')
     status = models.BooleanField(verbose_name="商品状态",default=True)
     create_at = models.DateTimeField(auto_now_add=True, verbose_name='添加时间')
@@ -42,6 +39,37 @@ class GoodsModel(models.Model):
         verbose_name = '商品'
         verbose_name_plural = verbose_name
         # unique_together = (('name', 'description'),)
+
+    # 重写save方法，将image和license的图片重命名为图片名+时间戳;如果是更新商品，将旧图片复制到detail_img/goods和detail_img/license下
+    # def save(self, *args, **kwargs):
+    #     # if self.pk:
+    #     #     old = GoodsModel.objects.get(pk=self.pk)
+    #     #     if old.image != self.image and old.image:
+    #     #         # 将旧照片复制到detail_img/goods下
+    #     #         old_image_path = os.path.join(settings.MEDIA_ROOT, old.image.name)
+    #     #         new_image_path = os.path.join(settings.MEDIA_ROOT, 'detail_img/goods', old.image.name.split('/')[-1])
+    #     #         shutil.copyfile(old_image_path, new_image_path)
+    #     #     if old.license != self.license and old.license:
+    #     #         # 将旧照片复制到detail_img/license下
+    #     #         old_license_path = os.path.join(settings.MEDIA_ROOT, old.license.name)
+    #     #         new_license_path = os.path.join(settings.MEDIA_ROOT, 'detail_img/license', old.license.name.split('/')[-1])
+    #     #         shutil.copyfile(old_license_path, new_license_path)
+        
+    #     # 获得更新
+
+    #     self.image.name = self.name + str(int(self.update_at.timestamp())) + '.' + self.image.name.split('.')[-1]
+    #     self.license.name = self.name + str(int(self.update_at.timestamp())) + '.' + self.license.name.split('.')[-1]
+    #     super(GoodsModel, self).save(*args, **kwargs)
+
+    #     # 将图片复制到detail_img/goods和detail_img/license下
+    #     if not os.path.exists(os.path.join(settings.MEDIA_ROOT, 'detail_img/goods')):
+    #         os.makedirs(os.path.join(settings.MEDIA_ROOT, 'detail_img/goods'))
+    #     if self.image:
+    #         print(os.path.join(settings.MEDIA_ROOT, self.image.name))
+    #     shutil.copyfile(os.path.join(settings.MEDIA_ROOT, self.image.name), os.path.join(settings.MEDIA_ROOT, 'detail_img/goods', self.image.name.split('/')[-1]))
+    #     if not os.path.exists(os.path.join(settings.MEDIA_ROOT, 'detail_img/license')):
+    #         os.makedirs(os.path.join(settings.MEDIA_ROOT, 'detail_img/license'))
+    #     shutil.copyfile(os.path.join(settings.MEDIA_ROOT, self.license.name), os.path.join(settings.MEDIA_ROOT, 'detail_img/license', self.license.name.split('/')[-1]))
 
 # 价格周期模型
 class PriceCycleModel(models.Model):

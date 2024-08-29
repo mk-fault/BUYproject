@@ -24,6 +24,7 @@ from goods.pagination import GoodsPagination
 from account import permissions as mypermissions
 from account.models import AccountModel
 from utils import response as myresponse
+from goods.models import PriceCycleModel
 
 # Create your views here.
 
@@ -88,8 +89,11 @@ class CartViewset(myresponse.CustomModelViewSet):
         # 创建成功数，大于0则在失败时不删除订单
         success = 0
 
+        # 获取送达日期对应的价格周期
+        cycle = PriceCycleModel.objects.filter(start_date__lte=deliver_date, end_date__gte=deliver_date).first()
+
         # 创建订单实例
-        order, is_create = OrdersModel.objects.get_or_create(status=0, creater_id=user_id, deliver_date=deliver_date)
+        order, is_create = OrdersModel.objects.get_or_create(status=0, creater_id=user_id, deliver_date=deliver_date, cycle=cycle)
 
         cart_del_list = []
         # 对每一个购物车项，创建一个订单详情实例，并关联在订单实例上
@@ -113,23 +117,24 @@ class CartViewset(myresponse.CustomModelViewSet):
                                     "code": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
 
             # 获取商品当前的价格
-            now_time = datetime.datetime.now()
-            # now_time = "2024-07-18"
-            price = product.prices.filter(status=2, start_date__lte=now_time, end_date__gte=now_time).order_by('-id').first()
+            
+            price = product.prices.filter(status=2, start_date__lte=deliver_date, end_date__gte=deliver_date).order_by('-id').first()
 
             # 商品没有可用价格则下单失败，将商品名添加到失败列表中
-            if not price:
-                fail_list.append(product.name)
-                continue
+            # if not price:
+            #     fail_list.append(product.name)
+            #     continue
 
             # 创建订单详情实例
             try:
-                OrderDetailModel.objects.create(order=order, product_id=product.id, product_name=product.name, brand=product.brand,
+                if not price:
+                    OrderDetailModel.objects.create(order=order, product_id=product.id, product_name=product.name, brand=product.brand,
+                                            description=product.description, category=product.category.name,
+                                            price=0, funds=cart.funds.name, order_quantity=cart.quantity)
+                else:
+                    OrderDetailModel.objects.create(order=order, product_id=product.id, product_name=product.name, brand=product.brand,
                                             description=product.description, category=product.category.name,
                                             price=price.price, funds=cart.funds.name, order_quantity=cart.quantity)
-            # OrderDetailModel.objects.create(order=order, product_id=product.id, product_name=product.name,
-            #                                 description=product.description, unit=product.unit.name, category=product.category.name,
-            #                                 price=price.price, funds=cart.funds.name, order_quantity=cart.quantity)
                 success += 1
                 cart_del_list.append(cart)
             except:
@@ -445,24 +450,19 @@ class OrdersViewset(viewsets.GenericViewSet,
         
         # 没传入shool_id时表示是学校账户访问自己的报表
         if school_id is None:
-            # 判断如果当期账户是非学校账户，则要求传入学校ID
+            # 判断如果账户是非学校账户，则返回当期所有订单详情
             if request.user.role in ["0", "1"]:
-                return Response({
-                    "msg": "请传入学校ID",
-                    "data": None,
-                    "code": status.HTTP_400_BAD_REQUEST
-                }, status=status.HTTP_400_BAD_REQUEST)
-            
-            # 过滤在起止日期内的订单详情
-            # queryset = queryset.filter(finish_time__range=[start_date, end_date])
-            # 获取当天的最后时间
-            _end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1)
+                # 过滤在起止日期内的订单详情
+                _end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1)
+                queryset = queryset.filter(create_time__gte=start_date, create_time__lte=_end_date)
 
-            # 过滤在起止日期内的订单详情
-            queryset = queryset.filter(finish_time__gte=start_date, finish_time__lte=_end_date)
+            # 如果是学校账户，则返回当期用户的订单详情
+            else:
+                # 获取当天的最后时间
+                _end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1)
 
-            # first_name为当期用户
-            first_name = request.user.first_name
+                # 过滤在起止日期内的订单详情
+                queryset = queryset.filter(create_time__gte=start_date, create_time__lte=_end_date)
         
         # 如果传入的school_id不是学校账户则返回错误
         elif AccountModel.objects.filter(id=school_id).first().role != '2':
@@ -483,12 +483,9 @@ class OrdersViewset(viewsets.GenericViewSet,
                 }, status=status.HTTP_401_UNAUTHORIZED)
             
             # 过滤某一学校在起止日期内的订单详情
-            # queryset = queryset.filter(finish_time__range=[start_date, end_date], creater_id=school_id)
             _end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1)
-            queryset = queryset.filter(finish_time__gte=start_date, finish_time__lte=_end_date, creater_id=school_id)
+            queryset = queryset.filter(create_time__gte=start_date, create_time__lte=_end_date, creater_id=school_id)
 
-            # first_name为对应school_id的用户名
-            first_name = AccountModel.objects.filter(id=school_id).first().first_name
 
         # 如果查询结果为空，表示时间段内没有订单
         if not queryset.exists():
@@ -501,10 +498,12 @@ class OrdersViewset(viewsets.GenericViewSet,
         # 制作表格数据
         data = []
         for order in queryset:
+            school_name = AccountModel.objects.get(id=order.creater_id).first_name
             order_details = order.details.all()
             for detail in order_details:
                 detail_data = {
                     "商品编号": detail.product_id,
+                    "订单编号": order.id,
                     "商品名称": detail.product_name,
                     "商品规格": detail.description,
                     "商品品牌": detail.brand,
@@ -514,14 +513,16 @@ class OrdersViewset(viewsets.GenericViewSet,
                     "订购数量": detail.order_quantity,
                     "实收数量": detail.received_quantity,
                     "总价": detail.cost,
-                    "收货时间": str(detail.recipient_time),
-                    "学校": first_name
+                    "下单时间": str(order.create_time).split(".")[0],
+                    "送货日期": str(order.deliver_date),
+                    "收货时间": str(detail.recipient_time).split(".")[0] if detail.recipient_time else None,
+                    "学校": school_name
                 }
                 data.append(detail_data)
 
         # 返回文件响应
         df = pd.DataFrame(data)
-        file_name = f"{first_name}_{start_date}~{end_date}_订单报表.xlsx"
+        file_name = f"{start_date}~{end_date}_订单报表.xlsx"
 
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = f'attachment; filename="{quote(file_name)}"'
@@ -578,12 +579,8 @@ class OrdersViewset(viewsets.GenericViewSet,
                 detail_data.append(detail.product_name)
                 detail_data.append(detail.brand)
                 detail_data.append(detail.description)
-                detail_data.append('')
                 detail_data.append(detail.order_quantity)
-                detail_data.append(detail.price)
-                cost = round(float(detail.price) * float(detail.order_quantity), 2)
-                total += cost
-                detail_data.append(cost)
+                detail_data.append('')
                 detail_data.append('')
                 data.append(detail_data)
         
@@ -607,11 +604,11 @@ class OrdersViewset(viewsets.GenericViewSet,
 
 
         # 设置列宽度
-        worksheet.set_column('A:I', 9)   # 单位列
+        worksheet.set_column('A:G', 9)   # 单位列
 
         # 合并单元格并添加标题
         worksheet.set_row(0, 33)
-        worksheet.merge_range('A1:I1', '泸定县粮油购销有限责任公司配送清单', workbook.add_format({
+        worksheet.merge_range('A1:G1', '泸定县粮油购销有限责任公司配送清单', workbook.add_format({
             'align': 'center', 
             'valign': 'vcenter', 
             'font_size': 18, 
@@ -634,7 +631,7 @@ class OrdersViewset(viewsets.GenericViewSet,
             'valign': 'vcenter', 
             'font_size': 11, 
         }))
-        worksheet.merge_range('F2:I2', deliver_date, workbook.add_format({
+        worksheet.merge_range('F2:G2', deliver_date, workbook.add_format({
             'align': 'center', 
             'valign': 'vcenter', 
             'font_size': 11, 
@@ -642,7 +639,7 @@ class OrdersViewset(viewsets.GenericViewSet,
 
         # 添加表头
         worksheet.set_row(2, 25)
-        headers = ['行号', '品名', '品牌', '规格', '单位', '数量', '单价', '金额', '备注']
+        headers = ['行号', '品名', '品牌', '规格', '预订数量', '实收数量', '备注']
         worksheet.write_row('A3', headers, workbook.add_format({
             'align': 'center', 
             'valign': 'vcenter', 
@@ -663,37 +660,37 @@ class OrdersViewset(viewsets.GenericViewSet,
                 }))
             row_for_total = row
 
-        # 添加合计
-        row_for_total += 1
-        worksheet.set_row(row_for_total, 25)
-        worksheet.write(f'A{row_for_total+1}',"合计", workbook.add_format({
-                'border': 1,
-                'font_size': 11,
-                'align': 'center',
-                'valign': 'vcenter'
-                }))
+        # # 添加合计
+        # row_for_total += 1
+        # worksheet.set_row(row_for_total, 25)
+        # worksheet.write(f'A{row_for_total+1}',"合计", workbook.add_format({
+        #         'border': 1,
+        #         'font_size': 11,
+        #         'align': 'center',
+        #         'valign': 'vcenter'
+        #         }))
 
-        worksheet.merge_range(f'B{row_for_total+1}:F{row_for_total+1}', '   万    仟    佰    拾    元    角    分', workbook.add_format({
-            'align': 'center', 
-            'valign': 'vcenter',
-            'bold': True,
-            'border': 1
-        }))
-        worksheet.write(f'G{row_for_total+1}','小计', workbook.add_format({
-                'border': 1,
-                'font_size': 11,
-                'align': 'center',
-                'valign': 'vcenter'
-                }))
-        worksheet.write(f'H{row_for_total+1}', total, workbook.add_format({
-                'border': 1,
-                'font_size': 11,
-                'align': 'center',
-                'valign': 'vcenter'
-                }))
-        worksheet.write(f'I{row_for_total+1}','', workbook.add_format({
-                'border': 1,
-                }))
+        # worksheet.merge_range(f'B{row_for_total+1}:F{row_for_total+1}', '   万    仟    佰    拾    元    角    分', workbook.add_format({
+        #     'align': 'center', 
+        #     'valign': 'vcenter',
+        #     'bold': True,
+        #     'border': 1
+        # }))
+        # worksheet.write(f'G{row_for_total+1}','小计', workbook.add_format({
+        #         'border': 1,
+        #         'font_size': 11,
+        #         'align': 'center',
+        #         'valign': 'vcenter'
+        #         }))
+        # worksheet.write(f'H{row_for_total+1}', total, workbook.add_format({
+        #         'border': 1,
+        #         'font_size': 11,
+        #         'align': 'center',
+        #         'valign': 'vcenter'
+        #         }))
+        # worksheet.write(f'I{row_for_total+1}','', workbook.add_format({
+        #         'border': 1,
+        #         }))
         
         # 添加额外信息
         row_for_total += 1
@@ -710,14 +707,14 @@ class OrdersViewset(viewsets.GenericViewSet,
             'valign': 'vcenter', 
             'font_size': 11, 
         }))
-        worksheet.merge_range(f'E{row_for_total+1}:F{row_for_total+1}', '')
+        # worksheet.merge_range(f'E{row_for_total+1}:F{row_for_total+1}', '')
 
-        worksheet.write(f'G{row_for_total+1}', '负责人', workbook.add_format({
+        worksheet.write(f'F{row_for_total+1}', '负责人', workbook.add_format({
             'align': 'center', 
             'valign': 'vcenter', 
             'font_size': 11, 
         }))
-        worksheet.merge_range(f'H{row_for_total+1}:I{row_for_total+1}', '')
+        # worksheet.merge_range(f'H{row_for_total+1}:I{row_for_total+1}', '')
 
         # 关闭Excel文件
         workbook.close()

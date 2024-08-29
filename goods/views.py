@@ -41,20 +41,20 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
             return [IsRole0()]
         
     
-    def get_queryset(self):
-        queryset = super().get_queryset().order_by('id')
+    # def get_queryset(self):
+    #     queryset = super().get_queryset().order_by('id')
 
-        # 当粮油公司查看商品时，列出所有商品，包括未上架、为审核的商品
-        if self.request.user.role == "0":
-            return queryset
+    #     # 当粮油公司查看商品时，列出所有商品，包括未上架、为审核的商品
+    #     if self.request.user.role == "0":
+    #         return queryset
         
-        # 当其他用户查看商品时，列出可用商品（已上架、当前价格周期内有已审核价格的商品）
-        now_time = datetime.datetime.now()
-        # now_time = "2024-07-18"
-        # queryset = [product for product in queryset if product.prices.filter(status=2, start_date__lt=now_time, end_date__gt=now_time).exists()]
-        queryset = queryset.filter(status=True, prices__status=2, prices__start_date__lte=now_time, prices__end_date__gte=now_time).order_by('id').distinct()
+    #     # 当其他用户查看商品时，列出可用商品（已上架、当前价格周期内有已审核价格的商品）
+    #     now_time = datetime.datetime.now()
+    #     # now_time = "2024-07-18"
+    #     # queryset = [product for product in queryset if product.prices.filter(status=2, start_date__lt=now_time, end_date__gt=now_time).exists()]
+    #     queryset = queryset.filter(status=True, prices__status=2, prices__start_date__lte=now_time, prices__end_date__gte=now_time).order_by('id').distinct()
 
-        return queryset
+    #     return queryset
     
     @action(detail=True, methods=["post"])
     def order(self, request, pk=None):

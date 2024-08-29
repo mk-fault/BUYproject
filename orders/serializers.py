@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import *
 from goods.models import GoodsModel, PriceModel
 import datetime
+import os
 
 class FundsModelSerializer(serializers.ModelSerializer):
     class Meta:
@@ -32,8 +33,9 @@ class CartModelSerializer(serializers.ModelSerializer):
             price = product.prices.filter(status=2, start_date__lte=now_time, end_date__gte=now_time).order_by('-id').first()
             data['price'] = price.price  # Convert to integer
         except:
-            instance.delete()
-            raise serializers.ValidationError(f"{product.name}不存在可用价格，刷新以删除购物车商品")
+            # instance.delete()
+            # raise serializers.ValidationError(f"{product.name}不存在可用价格，刷新以删除购物车商品")
+            data['price'] = 0
         data['funds'] = instance.funds.name
         data['tolto_price'] = round(float(data['price']) * float(data['quantity']), 2)  # Convert to floats and round to 2 decimal places
         return data
@@ -68,5 +70,7 @@ class OrderDetailModelSerializer(serializers.ModelSerializer):
         
     # def to_representation(self, instance):
     #     data = super().to_representation(instance)
-    #     data['product_name'] = GoodsModel.objects.get(id=instance.product_id).name
+    #     server_url = self.context['request'].build_absolute_uri('/')
+    #     data['image'] = os.path.join(server_url, 'media', instance.image) if instance.image else None
+    #     data['license'] = os.path.join(server_url, 'media', instance.license) if instance.license else None
     #     return data
