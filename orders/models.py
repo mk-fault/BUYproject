@@ -48,7 +48,6 @@ class OrderDetailModel(models.Model):
     product_name = models.CharField(max_length=100, verbose_name="商品名称")
     brand = models.CharField(max_length=100, verbose_name="商品品牌", blank=True, null=True)
     description = models.TextField(verbose_name="商品规格")
-    # unit = models.CharField(max_length=100, verbose_name="商品类别")
     category = models.CharField(max_length=100, verbose_name="商品类别")
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="商品价格")
     funds = models.CharField(max_length=100, verbose_name="经费来源")
@@ -57,6 +56,8 @@ class OrderDetailModel(models.Model):
     cost = models.DecimalField(max_digits=10, decimal_places=2,verbose_name="商品总价", blank=True, null=True)
     recipient_id = models.IntegerField(verbose_name="收货人ID", blank=True, null=True)
     recipient_time = models.DateTimeField(verbose_name="收货时间", blank=True, null=True)
+    image = models.CharField(max_length=200, verbose_name="商品图片", blank=True, null=True)
+    license = models.CharField(max_length=200, verbose_name="商品资质", blank=True, null=True)
 
     class Meta:
         db_table = 'order_detail'

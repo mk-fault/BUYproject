@@ -68,9 +68,9 @@ class OrderDetailModelSerializer(serializers.ModelSerializer):
         model = OrderDetailModel
         fields = "__all__"
         
-    # def to_representation(self, instance):
-    #     data = super().to_representation(instance)
-    #     server_url = self.context['request'].build_absolute_uri('/')
-    #     data['image'] = os.path.join(server_url, 'media', instance.image) if instance.image else None
-    #     data['license'] = os.path.join(server_url, 'media', instance.license) if instance.license else None
-    #     return data
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        server_url = self.context['request'].build_absolute_uri('/')
+        data['image'] = os.path.join(server_url, 'media', instance.image) if instance.image else None
+        data['license'] = os.path.join(server_url, 'media', instance.license) if instance.license else None
+        return data

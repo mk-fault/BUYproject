@@ -40,23 +40,8 @@ class GoodsModel(models.Model):
         verbose_name_plural = verbose_name
         # unique_together = (('name', 'description'),)
 
-    # 重写save方法，将image和license的图片重命名为图片名+时间戳;如果是更新商品，将旧图片复制到detail_img/goods和detail_img/license下
+    # # 重写save方法，将image和license的图片重命名为图片名+时间戳;如果是更新商品，将旧图片复制到detail_img/goods和detail_img/license下
     # def save(self, *args, **kwargs):
-    #     # if self.pk:
-    #     #     old = GoodsModel.objects.get(pk=self.pk)
-    #     #     if old.image != self.image and old.image:
-    #     #         # 将旧照片复制到detail_img/goods下
-    #     #         old_image_path = os.path.join(settings.MEDIA_ROOT, old.image.name)
-    #     #         new_image_path = os.path.join(settings.MEDIA_ROOT, 'detail_img/goods', old.image.name.split('/')[-1])
-    #     #         shutil.copyfile(old_image_path, new_image_path)
-    #     #     if old.license != self.license and old.license:
-    #     #         # 将旧照片复制到detail_img/license下
-    #     #         old_license_path = os.path.join(settings.MEDIA_ROOT, old.license.name)
-    #     #         new_license_path = os.path.join(settings.MEDIA_ROOT, 'detail_img/license', old.license.name.split('/')[-1])
-    #     #         shutil.copyfile(old_license_path, new_license_path)
-        
-    #     # 获得更新
-
     #     self.image.name = self.name + str(int(self.update_at.timestamp())) + '.' + self.image.name.split('.')[-1]
     #     self.license.name = self.name + str(int(self.update_at.timestamp())) + '.' + self.license.name.split('.')[-1]
     #     super(GoodsModel, self).save(*args, **kwargs)

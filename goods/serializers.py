@@ -1,6 +1,9 @@
 from rest_framework import serializers
 import datetime
 from .models import *
+import os
+import shutil
+from django.conf import settings
 
 class PriceModelSerializer(serializers.ModelSerializer):
     class Meta:
@@ -112,6 +115,31 @@ class GoodsModelSerializer(serializers.ModelSerializer):
                 instance.delete()
                 raise serializers.ValidationError("为商品添加价格失败")
         return instance
+
+    def update(self, instance, validated_data): 
+        # 修改商品图片名字为商品名字+时间戳
+        if 'image' in validated_data and validated_data['image']:
+            validated_data['image'].name = instance.name + str(int(datetime.datetime.now().timestamp())) + os.path.splitext(validated_data['image'].name)[1]
+        
+        # 修改商品资质名字为商品名字+时间戳
+        if 'license' in validated_data and validated_data['license']:
+            validated_data['license'].name = instance.name + str(int(datetime.datetime.now().timestamp())) + os.path.splitext(validated_data['license'].name)[1]
+        data = super().update(instance, validated_data)
+
+        # 如果是更新商品，则将旧图片复制到detail_img/goods和detail_img/license下
+        if 'image' in validated_data and validated_data['image']:
+            image = instance.image.path
+            detail_image_path = os.path.join(settings.MEDIA_ROOT, 'detail_image', 'goods')
+            if not os.path.exists(detail_image_path):
+                os.makedirs(detail_image_path)
+            shutil.copyfile(image, os.path.join(detail_image_path, os.path.basename(image)))
+        if 'license' in validated_data and validated_data['license']:
+            license = instance.license.path
+            detail_image_path = os.path.join(settings.MEDIA_ROOT, 'detail_image', 'license')
+            if not os.path.exists(detail_image_path):
+                os.makedirs(detail_image_path)
+            shutil.copyfile(license, os.path.join(detail_image_path, os.path.basename(license)))
+        return data
 
     def to_representation(self, instance):
         data = super().to_representation(instance)

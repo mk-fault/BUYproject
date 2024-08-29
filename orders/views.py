@@ -117,8 +117,21 @@ class CartViewset(myresponse.CustomModelViewSet):
                                     "code": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
 
             # 获取商品当前的价格
-            
             price = product.prices.filter(status=2, start_date__lte=deliver_date, end_date__gte=deliver_date).order_by('-id').first()
+
+            # 获取商品用于生成订单详情的图片
+            image = product.image
+            if image:
+                detail_image_path = os.path.join('detail_image', 'goods', image.name.split('/')[-1])
+            else:
+                detail_image_path = None
+            
+            # 获取商品用于生成订单详情的资质
+            license = product.license
+            if license:
+                detail_license_path = os.path.join('detail_image', 'license', license.name.split('/')[-1])
+            else:
+                detail_license_path = None
 
             # 商品没有可用价格则下单失败，将商品名添加到失败列表中
             # if not price:
@@ -130,11 +143,11 @@ class CartViewset(myresponse.CustomModelViewSet):
                 if not price:
                     OrderDetailModel.objects.create(order=order, product_id=product.id, product_name=product.name, brand=product.brand,
                                             description=product.description, category=product.category.name,
-                                            price=0, funds=cart.funds.name, order_quantity=cart.quantity)
+                                            price=0, funds=cart.funds.name, order_quantity=cart.quantity, image=detail_image_path, license=detail_license_path)
                 else:
                     OrderDetailModel.objects.create(order=order, product_id=product.id, product_name=product.name, brand=product.brand,
                                             description=product.description, category=product.category.name,
-                                            price=price.price, funds=cart.funds.name, order_quantity=cart.quantity)
+                                            price=price.price, funds=cart.funds.name, order_quantity=cart.quantity, image=detail_image_path, license=detail_license_path)
                 success += 1
                 cart_del_list.append(cart)
             except:
@@ -208,7 +221,7 @@ class OrdersViewset(viewsets.GenericViewSet,
 
         # 制作分页响应
         page_details = self.paginate_queryset(order_details)
-        serializer = OrderDetailModelSerializer(page_details, many=True)
+        serializer = OrderDetailModelSerializer(page_details, many=True, context={"request": request})
         return self.get_paginated_response(serializer.data)
         # if page_details is not None:
         #     serializer = OrderDetailModelSerializer(page_details, many=True)
@@ -399,24 +412,6 @@ class OrdersViewset(viewsets.GenericViewSet,
             except:
                 err_list.append(detail_id)
 
-        # # 遍历json进行收货
-        # for detail_id, recv_num in recv.items():
-        #     try:
-        #         item = OrderDetailModel.objects.get(id=detail_id)
-        #         # 如果该订单详情不属于该订单，则加入错误列表
-        #         if item.order != order:
-        #             raise ValueError
-        #         # 当该项之前未有过收货行为时，增加已收货条目数
-        #         if item.received_quantity is None:
-        #             order.finish_num += 1
-        #         # 更新收货数量和总计价格、时间
-        #         item.received_quantity = recv_num
-        #         item.cost = float(recv_num) * float(item.price)
-        #         item.recipient_id = request.user.id
-        #         item.recipient_time = datetime.datetime.now()
-        #         item.save()
-        #     except:
-        #         err_list.append(detail_id)
 
         # 当已收货条目和待收获条目相等时，视为订单全部收货，修改订单状态为待复核
         if order.finish_num == order.product_num:
