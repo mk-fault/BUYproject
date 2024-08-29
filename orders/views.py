@@ -179,11 +179,11 @@ class OrdersViewset(viewsets.GenericViewSet,
 
         # 教体局组和粮油公司组获得所有的订单查看权
         if self.request.user.role == "1" or self.request.user.role == "0":
-            return queryset.order_by('id')
+            return queryset.order_by('-deliver_date')
         
         # 学校用户只查询该用户创建的订单
         user_id = self.request.user.id
-        queryset = queryset.filter(creater_id=user_id).order_by('id')
+        queryset = queryset.filter(creater_id=user_id).order_by('-deliver_date')
         return queryset
     
     def get_permissions(self):       
@@ -454,7 +454,7 @@ class OrdersViewset(viewsets.GenericViewSet,
             if request.user.role in ["0", "1"]:
                 # 过滤在起止日期内的订单详情
                 _end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1)
-                queryset = queryset.filter(create_time__gte=start_date, create_time__lte=_end_date)
+                queryset = queryset.filter(create_time__gte=start_date, create_time__lte=_end_date).order_by('creater_id', 'id')
 
             # 如果是学校账户，则返回当期用户的订单详情
             else:
@@ -462,7 +462,7 @@ class OrdersViewset(viewsets.GenericViewSet,
                 _end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1)
 
                 # 过滤在起止日期内的订单详情
-                queryset = queryset.filter(create_time__gte=start_date, create_time__lte=_end_date)
+                queryset = queryset.filter(create_time__gte=start_date, create_time__lte=_end_date).order_by('id')
         
         # 如果传入的school_id不是学校账户则返回错误
         elif AccountModel.objects.filter(id=school_id).first().role != '2':
@@ -484,7 +484,7 @@ class OrdersViewset(viewsets.GenericViewSet,
             
             # 过滤某一学校在起止日期内的订单详情
             _end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1)
-            queryset = queryset.filter(create_time__gte=start_date, create_time__lte=_end_date, creater_id=school_id)
+            queryset = queryset.filter(create_time__gte=start_date, create_time__lte=_end_date, creater_id=school_id).order_by('id')
 
 
         # 如果查询结果为空，表示时间段内没有订单
