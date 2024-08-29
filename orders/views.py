@@ -91,6 +91,10 @@ class CartViewset(myresponse.CustomModelViewSet):
 
         # 获取送达日期对应的价格周期
         cycle = PriceCycleModel.objects.filter(start_date__lte=deliver_date, end_date__gte=deliver_date).first()
+        if not cycle:
+            return Response({"msg": "送达日期不在任何价格周期内，无法下单",
+                                "data": None,
+                                "code": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
 
         # 创建订单实例
         order, is_create = OrdersModel.objects.get_or_create(status=0, creater_id=user_id, deliver_date=deliver_date, cycle=cycle)
@@ -201,10 +205,8 @@ class OrdersViewset(viewsets.GenericViewSet,
     
     def get_permissions(self):       
         # 仅粮油公司组能进行接单、发货、送达操作
-        if self.action in ["accept", "ship", "delivered", "argue", "agree", "gendeliver"]:
+        if self.action in ["accept", "ship", "delivered", "argue", "agree", "gendeliver", "genfunds"]:
             return [mypermissions.IsRole0()]
-        elif self.action in ["genfunds"]:
-            return [mypermissions.IsRole1()]
         else:
             return [permissions.IsAuthenticated()]
     
@@ -823,7 +825,7 @@ class OrdersViewset(viewsets.GenericViewSet,
                     run._element.rPr.rFonts.set(qn('w:eastAsia'), '宋体')  # 强制设置中文字体为宋体
                     run.font.size = Pt(11)  # 设置字体大小为11号
                 if row.cells[0].text == "结算资金（元）":
-                    if row.cells[1].text == "以上三项合计金额：":
+                    if row.cells[1].text == "以上四项合计金额：":
                         res = row.cells[1].text + str(total)
                         row.cells[1].text = ''
                         run = row.cells[1].paragraphs[0].add_run(res)

@@ -37,6 +37,8 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
             return [permissions.IsAuthenticated()]
         elif self.action == 'order':
             return [IsRole2()]
+        elif self.action == 'upload':
+            return [IsRole1()]
         else:
             return [IsRole0()]
         
@@ -133,8 +135,8 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
                 "data": None,
                 "code": status.HTTP_400_BAD_REQUEST
             }, status=status.HTTP_400_BAD_REQUEST)
+        
         if not PriceCycleModel.objects.filter(id=cycle_id).exists():
-
             return Response({
                 "msg": "所选周期不存在",
                 "data": None,
@@ -176,27 +178,29 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
                 row_dict = row.to_dict()
                 row_dict['category'] = category_id
                 row_dict['brand'] = None if pd.isnull(row_dict['brand']) else row_dict['brand']
-                # 如果商品及其规格存在的话，则修改并提交报价
-                if GoodsModel.objects.filter(name=row['name'], brand=row['brand'], description=row['description']).exists():
-                    product_obj = GoodsModel.objects.filter(name=row['name'], brand=row['brand'], description=row['description']).first()
-                    
-                    # 没有status=0的价格，表示已经提出报价或报价已经被处理，需要手动调整
-                    if not PriceModel.objects.filter(product=product_obj, status=0, cycle__id=cycle_id).exists():
-                        errs['edit'].append(row_dict)
-
-                    # 有status=0的价格，则修改报价，并提交申请
+                # 如果商品及其规格存在的话，则修改并更新报价
+                if GoodsModel.objects.filter(name=row['name'], description=row['description']).exists():
+                    product_obj = GoodsModel.objects.filter(name=row['name'], description=row['description']).first()
+                    ser = GoodsModelSerializer(product_obj, data=row_dict, context={'user_id': request.user.id, 'cycle_id':cycle_id}, partial=True)
+                    if ser.is_valid():
+                        ser.save()
                     else:
-                        price_obj = PriceModel.objects.get(product=product_obj, status=0, cycle__id=cycle_id)
-                        price_obj.price = row_dict['price']
-                        price_obj.price_check_1 = row_dict['price_check_1']
-                        price_obj.price_check_2 = row_dict['price_check_2']
-                        price_obj.price_check_avg = row_dict['price_check_avg']
-                        price_obj.status = 1
-                        price_obj.creater_id = request.user.id
-                        price_obj.create_time = datetime.datetime.now()
-                        price_obj.reviewer_id = None
-                        price_obj.review_time = None
-                        price_obj.save()
+                        errs['edit'].append(row_dict)
+                    # # 没有status=0的价格，表示已经提出报价或报价已经被处理，需要手动调整
+                    # if not PriceModel.objects.filter(product=product_obj, status=0, cycle__id=cycle_id).exists():
+                    #     errs['edit'].append(row_dict)
+
+                    # # 有status=0的价格，则修改报价，并提交申请
+                    # else:
+                    price_obj = PriceModel.objects.get(product=product_obj, cycle__id=cycle_id)
+                    price_obj.price = row_dict['price']
+                    price_obj.price_check_1 = row_dict['price_check_1']
+                    price_obj.price_check_2 = row_dict['price_check_2']
+                    price_obj.price_check_avg = row_dict['price_check_avg']
+                    price_obj.status = 2
+                    price_obj.reviewer_id = self.request.user.id
+                    price_obj.review_time = datetime.datetime.now()
+                    price_obj.save()
 
 
                 # 如果不存在，则添加作为新的商品
@@ -205,7 +209,6 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
                     if ser.is_valid():
                         ser.save()
                     else:
-                        print(ser.errors)
                         errs['add'].append(row_dict)
 
         # 如果添加过程存在错误，则返回错误信息
