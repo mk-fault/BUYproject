@@ -28,7 +28,7 @@ class GoodsModel(models.Model):
     category = models.ForeignKey(CategoryModel, on_delete=models.CASCADE, verbose_name='商品类别')
     brand = models.CharField(max_length=100, verbose_name='商品品牌', blank=True, null=True)
     image = models.ImageField(upload_to='goods/', verbose_name='商品图片',blank=True, null=True)
-    license = models.ImageField(upload_to='license/', verbose_name='商品资质', blank=True, null=True)
+    license = models.FileField(upload_to='license/', verbose_name='商品资质', blank=True, null=True)
     description = models.CharField(max_length=100, verbose_name='商品规格')
     status = models.BooleanField(verbose_name="商品状态",default=True)
     create_at = models.DateTimeField(auto_now_add=True, verbose_name='添加时间')

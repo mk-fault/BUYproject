@@ -6,3 +6,6 @@ django-redis
 djangorestframework
 djangorestframework-simplejwt
 pillow
+python-docx
+xlsxwriter
+openpyxl

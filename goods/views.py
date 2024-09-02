@@ -200,7 +200,10 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
                     price_obj.status = 2
                     price_obj.reviewer_id = self.request.user.id
                     price_obj.review_time = datetime.datetime.now()
-                    price_obj.save()
+                    try:
+                        price_obj.save()
+                    except:
+                        errs['edit'].append(row_dict)
 
 
                 # 如果不存在，则添加作为新的商品
@@ -214,7 +217,7 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
         # 如果添加过程存在错误，则返回错误信息
         if errs['add'] or errs['edit']:
             return Response({
-                "msg": "部分商品添加失败或报价修改失败，已提出报价请求或已审核的价格需手动调整",
+                "msg": "部分商品添加失败或报价修改失败",
                 "data": {
                     "报价修改失败": errs['edit'],
                     "商品添加失败": errs['add']

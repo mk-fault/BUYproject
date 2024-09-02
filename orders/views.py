@@ -193,15 +193,18 @@ class OrdersViewset(viewsets.GenericViewSet,
 
     def get_queryset(self):
         queryset = super().get_queryset()
-
+        default_order_by = "-deliver_date"
+        if self.request.query_params.get("orderby") == "asc":
+            default_order_by = "deliver_date"
         # 教体局组和粮油公司组获得所有的订单查看权
         if self.request.user.role == "1" or self.request.user.role == "0":
-            return queryset.order_by('-deliver_date')
+            return queryset.order_by(default_order_by)
         
         # 学校用户只查询该用户创建的订单
         user_id = self.request.user.id
-        queryset = queryset.filter(creater_id=user_id).order_by('-deliver_date')
+        queryset = queryset.filter(creater_id=user_id).order_by(default_order_by)
         return queryset
+
     
     def get_permissions(self):       
         # 仅粮油公司组能进行接单、发货、送达操作
@@ -564,7 +567,6 @@ class OrdersViewset(viewsets.GenericViewSet,
         # 制作表单数据
         data = []
         no = 1
-        total = 0
         for order in queryset:
             if order.status == '6':
                 continue
@@ -657,37 +659,6 @@ class OrdersViewset(viewsets.GenericViewSet,
                 }))
             row_for_total = row
 
-        # # 添加合计
-        # row_for_total += 1
-        # worksheet.set_row(row_for_total, 25)
-        # worksheet.write(f'A{row_for_total+1}',"合计", workbook.add_format({
-        #         'border': 1,
-        #         'font_size': 11,
-        #         'align': 'center',
-        #         'valign': 'vcenter'
-        #         }))
-
-        # worksheet.merge_range(f'B{row_for_total+1}:F{row_for_total+1}', '   万    仟    佰    拾    元    角    分', workbook.add_format({
-        #     'align': 'center', 
-        #     'valign': 'vcenter',
-        #     'bold': True,
-        #     'border': 1
-        # }))
-        # worksheet.write(f'G{row_for_total+1}','小计', workbook.add_format({
-        #         'border': 1,
-        #         'font_size': 11,
-        #         'align': 'center',
-        #         'valign': 'vcenter'
-        #         }))
-        # worksheet.write(f'H{row_for_total+1}', total, workbook.add_format({
-        #         'border': 1,
-        #         'font_size': 11,
-        #         'align': 'center',
-        #         'valign': 'vcenter'
-        #         }))
-        # worksheet.write(f'I{row_for_total+1}','', workbook.add_format({
-        #         'border': 1,
-        #         }))
         
         # 添加额外信息
         row_for_total += 1
