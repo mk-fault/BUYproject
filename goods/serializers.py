@@ -105,7 +105,7 @@ class GoodsModelSerializer(serializers.ModelSerializer):
                         else:
                             PriceModel.objects.create(product=instance, price=price, price_check_1=price_check_1, price_check_2=price_check_2,
                                                 price_check_avg=price_check_avg, cycle=cycle, start_date=cycle.start_date, end_date=cycle.end_date,
-                                                status=0)
+                                                status=0, creater_id=self.context['user_id'], create_time=now_time)
             except:
                 instance.delete()
                 raise serializers.ValidationError("为商品添加价格失败")

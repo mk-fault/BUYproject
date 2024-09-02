@@ -69,6 +69,7 @@ class CartViewset(myresponse.CustomModelViewSet):
         # 获取购物车项ID列表
         item_list = request.data.get('cart_ids')
         deliver_date = request.data.get('deliver_date')
+        note = request.data.get('note')
         user_id = request.user.id
 
         # 判断列表是否为空
@@ -86,6 +87,9 @@ class CartViewset(myresponse.CustomModelViewSet):
         # 失败列表，存储下单失败的商品的名字
         fail_list = []
 
+        # 过期列表
+        expire_list = []
+
         # 创建成功数，大于0则在失败时不删除订单
         success = 0
 
@@ -98,6 +102,11 @@ class CartViewset(myresponse.CustomModelViewSet):
 
         # 创建订单实例
         order, is_create = OrdersModel.objects.get_or_create(status=0, creater_id=user_id, deliver_date=deliver_date, cycle=cycle)
+
+        if is_create or order.note is None:
+            order.note = note
+        else:
+            order.note = order.note + ';' + note if note else order.note
 
         cart_del_list = []
         # 对每一个购物车项，创建一个订单详情实例，并关联在订单实例上
@@ -120,6 +129,10 @@ class CartViewset(myresponse.CustomModelViewSet):
                                     "data": None,
                                     "code": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
 
+            if product.status == 0:
+                expire_list.append(product.name)
+                cart.delete()
+                continue
             # 获取商品当前的价格
             price = product.prices.filter(status=2, start_date__lte=deliver_date, end_date__gte=deliver_date).order_by('-id').first()
 
@@ -172,6 +185,13 @@ class CartViewset(myresponse.CustomModelViewSet):
             return Response({
                     "msg": "部分商品下单失败",
                     "data": fail_list,
+                    "code": status.HTTP_200_OK}, status=status.HTTP_200_OK)
+        
+        # 如果存在过期商品返回过期商品名
+        if expire_list:
+            return Response({
+                    "msg": "部分商品已下架,刷新以删除商品",
+                    "data": expire_list,
                     "code": status.HTTP_200_OK}, status=status.HTTP_200_OK)
         
         # 添加订单的下单总数
@@ -568,13 +588,21 @@ class OrdersViewset(viewsets.GenericViewSet,
         category_data = {}
         count = {}
         categorys = CategoryModel.objects.all()
+
+        # 为每个种类制作data列表
         for category in categorys:
             category_data[category.name] = []
             count[category.name] = 1
 
+        # 制作备注
+        note_list = []
+
         for order in queryset:
+            # 跳过已完成和未接单的订单
             if order.status == '6' or order.status == '0':
                 continue
+            if order.note:
+                note_list.append(f"{order.note}")
             details = order.details.all()
             for detail in details:
                 detail_data = []
@@ -588,6 +616,7 @@ class OrdersViewset(viewsets.GenericViewSet,
                 detail_data.append('')
                 category_data[detail.category].append(detail_data)
 
+        note = ";".join(note_list)
         # data = []
         # no = 1
         # for order in queryset:
@@ -623,7 +652,10 @@ class OrdersViewset(viewsets.GenericViewSet,
 
         workbook = xlsxwriter.Workbook(output, {"in_memory":True})
 
+        # 表示种类为空的数量，如果所有种类的数据都为空，表示所选时间没有要送的订单
         empty_num = 0
+
+        # 遍历字典，为每个种类创建一个data列表，存储该种类下的订单详情信息，用于生成表格
         for k, data in category_data.items():
             if len(data) == 0:
                 empty_num += 1
@@ -687,6 +719,19 @@ class OrdersViewset(viewsets.GenericViewSet,
                     }))
                 row_for_total = row
 
+            # 添加备注：
+            row_for_total += 1
+            worksheet.set_row(row_for_total, 25)
+            worksheet.write(f'A{row_for_total+1}', '备注', workbook.add_format({
+                'align': 'center', 
+                'valign': 'vcenter', 
+                'font_size': 11, 
+            }))
+            worksheet.merge_range(f'B{row_for_total+1}:G{row_for_total+1}', f'{note}', workbook.add_format({
+                'align': 'left', 
+                'valign': 'vcenter', 
+                'font_size': 11, 
+            }))
             
             # 添加额外信息
             row_for_total += 1
@@ -715,6 +760,7 @@ class OrdersViewset(viewsets.GenericViewSet,
         # 关闭Excel文件
         workbook.close()
 
+        # 判单是否数据全为空
         if len(category_data) == empty_num:
             return Response({
                 "msg":"所选日期没有待送货物品",
@@ -837,6 +883,7 @@ class OrdersViewset(viewsets.GenericViewSet,
                         run._element.rPr.rFonts.set(qn('w:eastAsia'), '宋体')  # 强制设置中文字体为宋体
                         run.font.size = Pt(11)  # 设置字体大小为11号
                     else:
+                        # 使用经费字段名和模板进行匹配
                         for k, v in funds_dic.items():
                             if k in row.cells[1].text:
                                 res = row.cells[1].text + str(v)

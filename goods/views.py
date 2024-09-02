@@ -57,6 +57,15 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
     #     queryset = queryset.filter(status=True, prices__status=2, prices__start_date__lte=now_time, prices__end_date__gte=now_time).order_by('id').distinct()
 
     #     return queryset
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        # 学院用户只能看到上架商品
+        if self.request.user.role == '2':
+            queryset = queryset.filter(status=1)
+        
+        return queryset.order_by('id')
     
     @action(detail=True, methods=["post"])
     def order(self, request, pk=None):

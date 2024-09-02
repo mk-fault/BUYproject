@@ -34,6 +34,7 @@ class OrdersModel(models.Model):
     finish_num = models.IntegerField(verbose_name="完成项个数", default=0)
     finish_time = models.DateTimeField(verbose_name="订单完成时间", blank=True, null=True)
     cycle = models.ForeignKey(PriceCycleModel, on_delete=models.SET_NULL, verbose_name="价格周期", blank=True, null=True)
+    note = models.TextField(verbose_name="备注", blank=True, null=True)
     # finish_status_choice = (("0", "未完成"), ("-1", "完成但数量有误"), ("1", "全部完成"))
     # finish_status = models.CharField(max_length=10, choices=finish_status_choice, verbose_name="订单完成情况")
 
