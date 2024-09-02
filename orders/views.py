@@ -24,7 +24,7 @@ from goods.pagination import GoodsPagination
 from account import permissions as mypermissions
 from account.models import AccountModel
 from utils import response as myresponse
-from goods.models import PriceCycleModel
+from goods.models import PriceCycleModel, CategoryModel
 
 # Create your views here.
 
@@ -453,16 +453,16 @@ class OrdersViewset(viewsets.GenericViewSet,
             # 判断如果账户是非学校账户，则返回当期所有订单详情
             if request.user.role in ["0", "1"]:
                 # 过滤在起止日期内的订单详情
-                _end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1)
-                queryset = queryset.filter(create_time__gte=start_date, create_time__lte=_end_date).order_by('creater_id', 'id')
+                # _end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1)
+                queryset = queryset.filter(deliver_date__gte=start_date, deliver_date__lte=end_date).order_by('creater_id', 'id')
 
             # 如果是学校账户，则返回当期用户的订单详情
             else:
                 # 获取当天的最后时间
-                _end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1)
+                # _end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1)
 
                 # 过滤在起止日期内的订单详情
-                queryset = queryset.filter(create_time__gte=start_date, create_time__lte=_end_date).order_by('id')
+                queryset = queryset.filter(deliver_date__gte=start_date, deliver_date__lte=end_date).order_by('id')
         
         # 如果传入的school_id不是学校账户则返回错误
         elif AccountModel.objects.filter(id=school_id).first().role != '2':
@@ -483,8 +483,8 @@ class OrdersViewset(viewsets.GenericViewSet,
                 }, status=status.HTTP_401_UNAUTHORIZED)
             
             # 过滤某一学校在起止日期内的订单详情
-            _end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1)
-            queryset = queryset.filter(create_time__gte=start_date, create_time__lte=_end_date, creater_id=school_id).order_by('id')
+            # _end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1)
+            queryset = queryset.filter(deliver_date__gte=start_date, deliver_date__lte=end_date, creater_id=school_id).order_by('id')
 
 
         # 如果查询结果为空，表示时间段内没有订单
@@ -565,23 +565,46 @@ class OrdersViewset(viewsets.GenericViewSet,
             }, status=status.HTTP_400_BAD_REQUEST)
         
         # 制作表单数据
-        data = []
-        no = 1
+        category_data = {}
+        count = {}
+        categorys = CategoryModel.objects.all()
+        for category in categorys:
+            category_data[category.name] = []
+            count[category.name] = 1
+
         for order in queryset:
-            if order.status == '6':
+            if order.status == '6' or order.status == '0':
                 continue
             details = order.details.all()
             for detail in details:
                 detail_data = []
-                detail_data.append(no)
-                no += 1
+                detail_data.append(count[detail.category])
+                count[detail.category] += 1
                 detail_data.append(detail.product_name)
                 detail_data.append(detail.brand)
                 detail_data.append(detail.description)
                 detail_data.append(detail.order_quantity)
                 detail_data.append('')
                 detail_data.append('')
-                data.append(detail_data)
+                category_data[detail.category].append(detail_data)
+
+        # data = []
+        # no = 1
+        # for order in queryset:
+        #     if order.status == '6':
+        #         continue
+        #     details = order.details.all()
+        #     for detail in details:
+        #         detail_data = []
+        #         detail_data.append(no)
+        #         no += 1
+        #         detail_data.append(detail.product_name)
+        #         detail_data.append(detail.brand)
+        #         detail_data.append(detail.description)
+        #         detail_data.append(detail.order_quantity)
+        #         detail_data.append('')
+        #         detail_data.append('')
+        #         data.append(detail_data)
         
         # 填充表格数据
         # data1 = [
@@ -599,93 +622,105 @@ class OrdersViewset(viewsets.GenericViewSet,
         output = BytesIO()
 
         workbook = xlsxwriter.Workbook(output, {"in_memory":True})
-        worksheet = workbook.add_worksheet()
 
+        empty_num = 0
+        for k, data in category_data.items():
+            if len(data) == 0:
+                empty_num += 1
+                continue
+            worksheet = workbook.add_worksheet(name=k)
 
-        # 设置列宽度
-        worksheet.set_column('A:G', 9)   # 单位列
+            # 设置列宽度
+            worksheet.set_column('A:G', 9)   # 单位列
 
-        # 合并单元格并添加标题
-        worksheet.set_row(0, 33)
-        worksheet.merge_range('A1:G1', '泸定县粮油购销有限责任公司配送清单', workbook.add_format({
-            'align': 'center', 
-            'valign': 'vcenter', 
-            'font_size': 18, 
-            'bold': True
-        }))
+            # 合并单元格并添加标题
+            worksheet.set_row(0, 33)
+            worksheet.merge_range('A1:G1', '泸定县粮油购销有限责任公司配送清单', workbook.add_format({
+                'align': 'center', 
+                'valign': 'vcenter', 
+                'font_size': 18, 
+                'bold': True
+            }))
 
-        worksheet.set_row(1, 25)
-        worksheet.write('A2', '收货单位', workbook.add_format({
-            'align': 'center', 
-            'valign': 'vcenter', 
-            'font_size': 11, 
-        }))
-        worksheet.merge_range('B2:D2', first_name, workbook.add_format({
-            'align': 'center', 
-            'valign': 'vcenter', 
-            'font_size': 11, 
-        }))
-        worksheet.write('E2', '配送日期', workbook.add_format({
-            'align': 'center', 
-            'valign': 'vcenter', 
-            'font_size': 11, 
-        }))
-        worksheet.merge_range('F2:G2', deliver_date, workbook.add_format({
-            'align': 'center', 
-            'valign': 'vcenter', 
-            'font_size': 11, 
-        }))
+            worksheet.set_row(1, 25)
+            worksheet.write('A2', '收货单位', workbook.add_format({
+                'align': 'center', 
+                'valign': 'vcenter', 
+                'font_size': 11, 
+            }))
+            worksheet.merge_range('B2:D2', first_name, workbook.add_format({
+                'align': 'center', 
+                'valign': 'vcenter', 
+                'font_size': 11, 
+            }))
+            worksheet.write('E2', '配送日期', workbook.add_format({
+                'align': 'center', 
+                'valign': 'vcenter', 
+                'font_size': 11, 
+            }))
+            worksheet.merge_range('F2:G2', deliver_date, workbook.add_format({
+                'align': 'center', 
+                'valign': 'vcenter', 
+                'font_size': 11, 
+            }))
 
-        # 添加表头
-        worksheet.set_row(2, 25)
-        headers = ['行号', '品名', '品牌', '规格', '预订数量', '实收数量', '备注']
-        worksheet.write_row('A3', headers, workbook.add_format({
-            'align': 'center', 
-            'valign': 'vcenter', 
-            'font_size': 11, 
-            'border': 1
-        }))
+            # 添加表头
+            worksheet.set_row(2, 25)
+            headers = ['行号', '品名', '品牌', '规格', '预订数量', '实收数量', '备注']
+            worksheet.write_row('A3', headers, workbook.add_format({
+                'align': 'center', 
+                'valign': 'vcenter', 
+                'font_size': 11, 
+                'border': 1
+            }))
 
-        # 写入数据
-        row_start = 3
-        row_for_total = 0
-        for row, record in enumerate(data, start=row_start):
-            worksheet.set_row(row, 25)
-            worksheet.write_row(row, 0, record, workbook.add_format({
-                'border': 1,
-                'font_size': 11,
-                'align': 'center',
-                'valign': 'vcenter'
-                }))
-            row_for_total = row
+            # 写入数据
+            row_start = 3
+            row_for_total = 0
+            for row, record in enumerate(data, start=row_start):
+                worksheet.set_row(row, 25)
+                worksheet.write_row(row, 0, record, workbook.add_format({
+                    'border': 1,
+                    'font_size': 11,
+                    'align': 'center',
+                    'valign': 'vcenter'
+                    }))
+                row_for_total = row
 
-        
-        # 添加额外信息
-        row_for_total += 1
-        worksheet.set_row(row_for_total, 25)
-        worksheet.write(f'A{row_for_total+1}', '送货人', workbook.add_format({
-            'align': 'center', 
-            'valign': 'vcenter', 
-            'font_size': 11, 
-        }))
-        worksheet.merge_range(f'B{row_for_total+1}:C{row_for_total+1}', '')
+            
+            # 添加额外信息
+            row_for_total += 1
+            worksheet.set_row(row_for_total, 25)
+            worksheet.write(f'A{row_for_total+1}', '送货人', workbook.add_format({
+                'align': 'center', 
+                'valign': 'vcenter', 
+                'font_size': 11, 
+            }))
+            worksheet.merge_range(f'B{row_for_total+1}:C{row_for_total+1}', '')
 
-        worksheet.write(f'D{row_for_total+1}', '验收人', workbook.add_format({
-            'align': 'center', 
-            'valign': 'vcenter', 
-            'font_size': 11, 
-        }))
-        # worksheet.merge_range(f'E{row_for_total+1}:F{row_for_total+1}', '')
+            worksheet.write(f'D{row_for_total+1}', '验收人', workbook.add_format({
+                'align': 'center', 
+                'valign': 'vcenter', 
+                'font_size': 11, 
+            }))
+            # worksheet.merge_range(f'E{row_for_total+1}:F{row_for_total+1}', '')
 
-        worksheet.write(f'F{row_for_total+1}', '负责人', workbook.add_format({
-            'align': 'center', 
-            'valign': 'vcenter', 
-            'font_size': 11, 
-        }))
-        # worksheet.merge_range(f'H{row_for_total+1}:I{row_for_total+1}', '')
+            worksheet.write(f'F{row_for_total+1}', '负责人', workbook.add_format({
+                'align': 'center', 
+                'valign': 'vcenter', 
+                'font_size': 11, 
+            }))
+            # worksheet.merge_range(f'H{row_for_total+1}:I{row_for_total+1}', '')
 
         # 关闭Excel文件
         workbook.close()
+
+        if len(category_data) == empty_num:
+            return Response({
+                "msg":"所选日期没有待送货物品",
+                "data":None,
+                "code":status.HTTP_204_NO_CONTENT
+            }, status=status.HTTP_204_NO_CONTENT)
 
         output.seek(0)
         response = HttpResponse(output, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -742,12 +777,10 @@ class OrdersViewset(viewsets.GenericViewSet,
         # 获取学校名称
         school_name = school.first_name
         
-        # 结束日期加一天，避免漏掉最后一天的数据
-        _end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d") + datetime.timedelta(days=1)
 
         # 获取查询集
         queryset = self.get_queryset()
-        queryset = queryset.filter(finish_time__gte=start_date, finish_time__lte=_end_date, creater_id=school_id)
+        queryset = queryset.filter(deliver_date__gte=start_date, deliver_date__lte=end_date, creater_id=school_id, status=6)
 
         if not queryset:
             return Response({
