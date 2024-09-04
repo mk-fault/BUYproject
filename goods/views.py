@@ -243,7 +243,6 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
 
                 # 如果不存在，则添加作为新的商品
                 else:
-                    print(row_dict)
                     ser = GoodsModelSerializer(data=row_dict, context={'user_id': request.user.id, 'cycle_id':cycle_id, 'dict':row_dict})
                     if ser.is_valid():
                         ser.save()
