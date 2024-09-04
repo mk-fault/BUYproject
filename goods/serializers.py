@@ -48,18 +48,18 @@ class CategoryModelSerializer(serializers.ModelSerializer):
 
 class GoodsModelSerializer(serializers.ModelSerializer):
     price = serializers.DecimalField(max_digits=10, decimal_places=2, write_only=True)
-    price_check_1 = serializers.DecimalField(max_digits=10, decimal_places=2, write_only=True)
-    price_check_2 = serializers.DecimalField(max_digits=10, decimal_places=2, write_only=True)
+    price_check_1 = serializers.DecimalField(max_digits=10, decimal_places=2, write_only=True, allow_null=True)
+    price_check_2 = serializers.DecimalField(max_digits=10, decimal_places=2, write_only=True, allow_null=True)
     price_check_avg = serializers.DecimalField(max_digits=10, decimal_places=2, write_only=True)
-    status = serializers.BooleanField(default=True,write_only=True)
+    status = serializers.BooleanField(default=True)
 
     class Meta:
         model = GoodsModel
-        fields = ['id', 'name', 'image', 'description', 'price', 'price_check_1', 'price_check_2', 'price_check_avg', 'category', 'status', 'brand', 'license']
+        fields = ['id', 'name', 'image', 'description', 'price', 'price_check_1', 'price_check_2', 'price_check_avg', 'category', 'status', 'brand', 'license', 'status']
 
     # 创建一个商品时，为它生成目前以及日期往后已存在的价格周期的价格对象
     def create(self, validated_data):
-        if GoodsModel.objects.filter(name=validated_data['name'], description=validated_data['description']).exists():
+        if GoodsModel.objects.filter(name=validated_data['name'], description=validated_data['description'], brand=validated_data['brand']).exists():
             raise serializers.ValidationError("已存在该规格商品")
         price = validated_data.pop('price')
         price_check_1 = validated_data.pop('price_check_1')

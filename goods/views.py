@@ -17,6 +17,7 @@ from utils import response as myresponse
 
 import datetime
 import pandas as pd
+import numpy as np
 
 # 商品视图集
 class GoodsViewSet(myresponse.CustomModelViewSet):
@@ -42,6 +43,14 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
         else:
             return [IsRole0()]
         
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        # 学院用户只能看到上架商品
+        if self.request.user.role == '2':
+            queryset = queryset.filter(status=1)
+        
+        return queryset.order_by('id')
     
     # def get_queryset(self):
     #     queryset = super().get_queryset().order_by('id')
@@ -72,9 +81,10 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
         product = self.get_object()
         product_id = pk
 
-        # 获取经费来源与订加购数量
+        # 获取经费来源与订加购数量，备注
         funds = request.data.get('funds')
         quantity = request.data.get('quantity')
+        note = request.data.get('note')
 
         # 创建人ID为当前用户ID
         creater_id = request.user.id
@@ -119,7 +129,7 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
                      "code": status.HTTP_200_OK}, status=status.HTTP_200_OK)
         
         # 没有则创建新的购物车实例
-        CartModel.objects.create(product=product, funds=funds_obj, quantity=quantity, creater_id=creater_id)
+        CartModel.objects.create(product=product, funds=funds_obj, quantity=quantity, creater_id=creater_id, note=note)
         return Response({"msg": "成功添加至购物车",
                  "data": None,
                  "code": status.HTTP_201_CREATED}, status=status.HTTP_201_CREATED)
@@ -164,6 +174,7 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
             if '类' not in sheet_name:
                 continue
 
+
             # 获取类别名，如果当前类别不存在，则创建类别
             category_name = sheet_name.strip()
             category_obj, _ = CategoryModel.objects.get_or_create(name=category_name)
@@ -175,10 +186,14 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
             col_name = ['brand', 'name', 'description', 'price_check_1', 'price_check_2', 'price_check_avg', 'price_down5', 'price']
             sheet_data.columns = col_name
             sheet_data = sheet_data.drop('price_down5', axis=1)
-            sheet_data['price_check_1'] = sheet_data['price_check_1'].round(2)
-            sheet_data['price_check_2'] = sheet_data['price_check_2'].round(2)
+            sheet_data['price_check_1'] = np.where(sheet_data['price_check_1'].notnull(),sheet_data['price_check_1'].round(2),None)
+            sheet_data['price_check_2'] = np.where(sheet_data['price_check_2'].notnull(),sheet_data['price_check_2'].round(2),None)
+
+            # sheet_data['price_check_1'] = sheet_data['price_check_1'].round(2)
+            # sheet_data['price_check_2'] = sheet_data['price_check_2'].round(2)
             sheet_data['price_check_avg'] = sheet_data['price_check_avg'].round(2)
             sheet_data['price'] = sheet_data['price'].round(2)
+
 
             # 遍历每一行数据，进行商品的添加或报价的修改提交
             for _, row in sheet_data.iterrows():
@@ -186,10 +201,14 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
                     break
                 row_dict = row.to_dict()
                 row_dict['category'] = category_id
-                row_dict['brand'] = None if pd.isnull(row_dict['brand']) else row_dict['brand']
+                row_dict['brand'] = None if pd.isnull(row_dict['brand']) else row_dict['brand'].strip()
+                row_dict['name'] = row_dict['name'].strip()
+                row_dict['description'] = row_dict['description'].strip()
                 # 如果商品及其规格存在的话，则修改并更新报价
-                if GoodsModel.objects.filter(name=row['name'], description=row['description']).exists():
-                    product_obj = GoodsModel.objects.filter(name=row['name'], description=row['description']).first()
+                if GoodsModel.objects.filter(name=row['name'], description=row['description'], brand=row['brand']).exists():
+                    product_obj = GoodsModel.objects.filter(name=row['name'], description=row['description'], brand=row['brand']).first()
+                    if not product_obj:
+                        return Response({row_dict}, status=status.HTTP_200_OK)
                     ser = GoodsModelSerializer(product_obj, data=row_dict, context={'user_id': request.user.id, 'cycle_id':cycle_id}, partial=True)
                     if ser.is_valid():
                         ser.save()
@@ -201,14 +220,21 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
 
                     # # 有status=0的价格，则修改报价，并提交申请
                     # else:
-                    price_obj = PriceModel.objects.get(product=product_obj, cycle__id=cycle_id)
-                    price_obj.price = row_dict['price']
-                    price_obj.price_check_1 = row_dict['price_check_1']
-                    price_obj.price_check_2 = row_dict['price_check_2']
-                    price_obj.price_check_avg = row_dict['price_check_avg']
-                    price_obj.status = 2
-                    price_obj.reviewer_id = self.request.user.id
-                    price_obj.review_time = datetime.datetime.now()
+                    try:
+                        price_obj = PriceModel.objects.get(product=product_obj, cycle__id=cycle_id)
+                        price_obj.price = row_dict['price']
+                        price_obj.price_check_1 = row_dict['price_check_1']
+                        price_obj.price_check_2 = row_dict['price_check_2']
+                        price_obj.price_check_avg = row_dict['price_check_avg']
+                        price_obj.status = 2
+                        price_obj.reviewer_id = self.request.user.id
+                        price_obj.review_time = datetime.datetime.now()
+                    except:
+                        price_obj = PriceModel.objects.create(product=product_obj, price=row_dict['price'], price_check_1=row_dict['price_check_1'], 
+                                                              price_check_2=row_dict['price_check_2'], price_check_avg=row_dict['price_check_avg'], 
+                                                              cycle=PriceCycleModel.objects.get(id=cycle_id), start_date=PriceCycleModel.objects.get(id=cycle_id).start_date, 
+                                                              end_date=PriceCycleModel.objects.get(id=cycle_id).end_date, status=2, creater_id=self.request.user.id, 
+                                                              create_time=datetime.datetime.now(), reviewer_id=self.request.user.id, review_time=datetime.datetime.now())
                     try:
                         price_obj.save()
                     except:
@@ -217,7 +243,8 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
 
                 # 如果不存在，则添加作为新的商品
                 else:
-                    ser = GoodsModelSerializer(data=row_dict, context={'user_id': request.user.id, 'cycle_id':cycle_id})
+                    print(row_dict)
+                    ser = GoodsModelSerializer(data=row_dict, context={'user_id': request.user.id, 'cycle_id':cycle_id, 'dict':row_dict})
                     if ser.is_valid():
                         ser.save()
                     else:
@@ -342,6 +369,9 @@ class PriceCycleViewSet(viewsets.GenericViewSet,
                             "data": None,
                             "code": status.HTTP_200_OK}, status=status.HTTP_200_OK)
     
+
+    # @action(detail=True, methods=['post'])
+    # def 
         
 
         

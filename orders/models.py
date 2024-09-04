@@ -16,6 +16,7 @@ class CartModel(models.Model):
     funds = models.ForeignKey(FundsModel, on_delete=models.CASCADE, verbose_name="经费实例", null=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=2,verbose_name="购买数量")
     creater_id = models.IntegerField(verbose_name="加购人ID", db_index=True)
+    note = models.TextField(verbose_name="备注", blank=True, null=True)
 
     class Meta:
         db_table = 'cart'
@@ -59,6 +60,7 @@ class OrderDetailModel(models.Model):
     recipient_time = models.DateTimeField(verbose_name="收货时间", blank=True, null=True)
     image = models.CharField(max_length=200, verbose_name="商品图片", blank=True, null=True)
     license = models.CharField(max_length=200, verbose_name="商品资质", blank=True, null=True)
+    note = models.TextField(verbose_name="备注", blank=True, null=True)
 
     class Meta:
         db_table = 'order_detail'

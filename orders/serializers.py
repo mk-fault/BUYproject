@@ -43,7 +43,7 @@ class CartModelSerializer(serializers.ModelSerializer):
 class CartPatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = CartModel
-        fields = ["quantity", "funds"]
+        fields = ["quantity", "funds", "note"]
 
     def to_representation(self, instance):
         data = super().to_representation(instance)

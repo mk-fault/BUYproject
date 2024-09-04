@@ -84,6 +84,20 @@ class CartViewset(myresponse.CustomModelViewSet):
                                 "data": None,
                                 "code": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
         
+        # 如果送达日期小于当前日期则返回错误
+        deliver_date = datetime.datetime.strptime(deliver_date, '%Y-%m-%d').date()
+        if deliver_date < datetime.date.today():
+            return Response({"msg": "送达日期不能早于当前日期",
+                                "data": None,
+                                "code": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 如果当前时间过了中午十二点，则不能下单今天以及明天的订单
+        if datetime.datetime.now().hour >= 12:
+            if deliver_date == datetime.date.today() or deliver_date == datetime.date.today() + datetime.timedelta(days=1):
+                return Response({"msg": "已过下单时间，无法下单今天和明天的订单",
+                                "data": None,
+                                "code": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        
         # 失败列表，存储下单失败的商品的名字
         fail_list = []
 
@@ -160,11 +174,11 @@ class CartViewset(myresponse.CustomModelViewSet):
                 if not price:
                     OrderDetailModel.objects.create(order=order, product_id=product.id, product_name=product.name, brand=product.brand,
                                             description=product.description, category=product.category.name,
-                                            price=0, funds=cart.funds.name, order_quantity=cart.quantity, image=detail_image_path, license=detail_license_path)
+                                            price=0, funds=cart.funds.name, order_quantity=cart.quantity, image=detail_image_path, license=detail_license_path, note=cart.note)
                 else:
                     OrderDetailModel.objects.create(order=order, product_id=product.id, product_name=product.name, brand=product.brand,
                                             description=product.description, category=product.category.name,
-                                            price=price.price, funds=cart.funds.name, order_quantity=cart.quantity, image=detail_image_path, license=detail_license_path)
+                                            price=price.price, funds=cart.funds.name, order_quantity=cart.quantity, image=detail_image_path, license=detail_license_path, note=cart.note)
                 success += 1
                 cart_del_list.append(cart)
             except:
@@ -230,6 +244,10 @@ class OrdersViewset(viewsets.GenericViewSet,
         # 仅粮油公司组能进行接单、发货、送达操作
         if self.action in ["accept", "ship", "delivered", "argue", "agree", "gendeliver", "genfunds"]:
             return [mypermissions.IsRole0()]
+        elif self.action in ["confirm"]:
+            return [mypermissions.IsRole2()]
+        elif self.action in ["cancel"]:
+            return [mypermissions.IsRole0OrRole2()]
         else:
             return [permissions.IsAuthenticated()]
     
@@ -587,12 +605,12 @@ class OrdersViewset(viewsets.GenericViewSet,
         # 制作表单数据
         category_data = {}
         count = {}
-        categorys = CategoryModel.objects.all()
+        categorys = ["粮油类", "其他类"]
 
         # 为每个种类制作data列表
         for category in categorys:
-            category_data[category.name] = []
-            count[category.name] = 1
+            category_data[category] = []
+            count[category] = 1
 
         # 制作备注
         note_list = []
@@ -605,16 +623,18 @@ class OrdersViewset(viewsets.GenericViewSet,
                 note_list.append(f"{order.note}")
             details = order.details.all()
             for detail in details:
+                category = "其他类" if detail.category != "粮油类" else "粮油类"
+
                 detail_data = []
-                detail_data.append(count[detail.category])
-                count[detail.category] += 1
+                detail_data.append(count[category])
+                count[category] += 1
                 detail_data.append(detail.product_name)
                 detail_data.append(detail.brand)
                 detail_data.append(detail.description)
                 detail_data.append(detail.order_quantity)
                 detail_data.append('')
-                detail_data.append('')
-                category_data[detail.category].append(detail_data)
+                detail_data.append(detail.note)
+                category_data[category].append(detail_data)
 
         note = ";".join(note_list)
         # data = []
@@ -902,6 +922,66 @@ class OrdersViewset(viewsets.GenericViewSet,
 
         return response
     
+    @action(methods=['post'], detail=True)
+    def cancel(self, request, pk=None):
+        """
+        用于取消订单。当学校用户取消订单时，仅能取消未接单的订单；当粮油公司取消订单时，仅能取消待发货的订单
+        """
+        order = self.get_object()
+
+        # 学校用户取消订单
+        if self.request.user.role == "2":
+            if order.status != "0":
+                return Response({
+                    "msg": "订单已接单，无法取消",
+                    "data": None,
+                    "code": status.HTTP_400_BAD_REQUEST
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # 取消订单后将订单详情中的商品重新加入购物车
+            for detail in order.details.all():
+                product = GoodsModel.objects.get(id=detail.product_id)
+                funds = FundsModel.objects.get(name=detail.funds)
+                        
+                # 检查购物车中是否有相同人创建的相同的商品和经费来源的项，如果有，进行累加
+                existing_cart = CartModel.objects.filter(product=product, funds=funds, creater_id=order.creater_id).first()
+                if existing_cart:
+                    existing_cart.quantity += int(detail.order_quantity)
+                    existing_cart.save()
+                else:
+                    # 没有则创建新的购物车实例
+                    CartModel.objects.create(product=product, funds=funds, quantity=detail.order_quantity, creater_id=order.creater_id, note=detail.note)
+
+            order.delete()
+
+            return Response({
+                "msg": "订单取消成功",
+                "data": None,
+                "code": status.HTTP_200_OK
+            }, status=status.HTTP_200_OK)
+
+
+        elif self.request.user.role == "0":
+            if order.status != "1":
+                return Response({
+                    "msg": "订单已发货，无法取消",
+                    "data": None,
+                    "code": status.HTTP_400_BAD_REQUEST
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # 将订单的状态设置为0，表示订单未接单
+            order.status = 0
+            order.accepter_id = None
+            order.accept_time = None
+            order.save()
+            return Response({
+                "msg": "订单取消接单成功",
+                "data": None,
+                "code": status.HTTP_200_OK
+            }, status=status.HTTP_200_OK)
+        
+
+
 class OrderDetailsViewset(viewsets.GenericViewSet):
     """
     仅用于确认收货，无CRUD方法

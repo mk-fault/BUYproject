@@ -43,6 +43,12 @@ class IsRole0OrRole1(BasePermission):
         if request.user.is_anonymous:
             return False
         return request.user.role == "1" or request.user.role == '0'
+    
+class IsRole0OrRole2(BasePermission):
+    def has_permission(self, request, view):
+        if request.user.is_anonymous:
+            return False
+        return request.user.role == "0" or request.user.role == '2'
 
 class IsRole3(BasePermission):
     def has_permission(self, request, view):
