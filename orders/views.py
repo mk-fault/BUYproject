@@ -25,6 +25,7 @@ from account import permissions as mypermissions
 from account.models import AccountModel
 from utils import response as myresponse
 from goods.models import PriceCycleModel, CategoryModel
+from utils.func import is_valid_date
 
 # Create your views here.
 
@@ -71,6 +72,13 @@ class CartViewset(myresponse.CustomModelViewSet):
         deliver_date = request.data.get('deliver_date')
         note = request.data.get('note')
         user_id = request.user.id
+
+        if not is_valid_date(deliver_date):
+            return Response({
+                "msg": "日期格式错误",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         # 判断列表是否为空
         if not item_list:
@@ -485,6 +493,15 @@ class OrdersViewset(viewsets.GenericViewSet,
         end_date = request.data.get("end_date")
         school_id = request.data.get("school_id", None)
         queryset = self.get_queryset()
+
+        # 判断起止时间是否合法
+        if not is_valid_date(start_date) or not is_valid_date(end_date):
+            return Response({
+                "msg": "日期格式错误",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
         
         # 没传入shool_id时表示是学校账户访问自己的报表
         if school_id is None:
@@ -577,6 +594,14 @@ class OrdersViewset(viewsets.GenericViewSet,
         """
         deliver_date = request.data.get("deliver_date")
         school_id = request.data.get("school_id")
+
+        if not is_valid_date(deliver_date):
+            return Response({
+                "msg": "日期格式错误",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+
 
         if not deliver_date:
             return Response({
@@ -810,6 +835,14 @@ class OrdersViewset(viewsets.GenericViewSet,
         school_id = request.data.get("school_id")
         start_date = request.data.get("start_date")
         end_date = request.data.get("end_date")
+
+        if not is_valid_date(start_date) or not is_valid_date(end_date):
+            return Response({
+                "msg": "日期格式错误",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         if not school_id:
             return Response({
                 "msg": "请传入学校ID",

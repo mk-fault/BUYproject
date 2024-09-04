@@ -303,53 +303,30 @@ class PriceCycleViewSet(viewsets.GenericViewSet,
         # 获得所有的商品
         product_queryset = GoodsModel.objects.all()
         for product in product_queryset:
-            # # 当由ori_price时表示创建时没有可用价格周期的商品，使用ori_price,并直接提交价格请求
-            # if product.ori_price is not None:
-            #     PriceModel.objects.create(
-            #         product=product,
-            #         price=product.ori_price,
-            #         price_check_1 = product.ori_price_check_1,
-            #         price_check_2 = product.ori_price_check_2,
-            #         price_check_avg = product.ori_price_check_avg,
-            #         cycle=instance,
-            #         start_date=instance.start_date,
-            #         end_date=instance.end_date,
-            #         status=1
-            #     )
-            #     product.ori_price = None
-            #     product.ori_price_check_1 = None
-            #     product.ori_price_check_2 = None
-            #     product.ori_price_check_avg = None
-            #     product.save()
-            # # 否则是已存在价格对象的商品，使用上一个价格
-            # else:
-
             # 使用上一个价格
-                try:
-                    old_price_obj = PriceModel.objects.filter(product=product).order_by('-id').first()
-                    old_price = old_price_obj.price
-                    old_price_check_1 = old_price_obj.price_check_1
-                    old_price_check_2 = old_price_obj.price_check_2
-                    old_price_check_avg = old_price_obj.price_check_avg
-                except:
-                    instance.delete()
-                    return Response({
-                        "msg": "价格周期创建错误",
-                        "data": None,
-                        "code": status.HTTP_400_BAD_REQUEST
-                    }, status=status.HTTP_400_BAD_REQUEST)
-                
-                PriceModel.objects.create(
-                    product=product,
-                    price=old_price,
-                    price_check_1 = old_price_check_1,
-                    price_check_2 = old_price_check_2,
-                    price_check_avg = old_price_check_avg,
-                    cycle=instance,
-                    start_date=instance.start_date,
-                    end_date=instance.end_date,
-                    status=0
-                )
+            try:
+                old_price_obj = PriceModel.objects.filter(product=product).order_by('-id').first()
+                old_price = old_price_obj.price
+                old_price_check_1 = old_price_obj.price_check_1
+                old_price_check_2 = old_price_obj.price_check_2
+                old_price_check_avg = old_price_obj.price_check_avg
+            except:
+                old_price = 0
+                old_price_check_1 = None
+                old_price_check_2 = None
+                old_price_check_avg = None
+            
+            PriceModel.objects.create(
+                product=product,
+                price=old_price,
+                price_check_1 = old_price_check_1,
+                price_check_2 = old_price_check_2,
+                price_check_avg = old_price_check_avg,
+                cycle=instance,
+                start_date=instance.start_date,
+                end_date=instance.end_date,
+                status=0
+            )
     
     # 弃用一个周期，并将该周期的价格对象的状态都设置为-99（已弃用）
     @action(detail=True, methods=['post'])

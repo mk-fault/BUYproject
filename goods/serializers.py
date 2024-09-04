@@ -169,25 +169,6 @@ class GoodsModelSerializer(serializers.ModelSerializer):
         # data['unit'] = instance.unit.name
         data['category'] = instance.category.name  
         return data
-
-    
-# class PriceRequestModelSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = PriceRequestModel
-#         fields = ['id', 'requested_at']
-    
-#     def to_representation(self, instance):
-#         data = super().to_representation(instance)
-#         data['price'] = instance.price.price
-#         data['cycle_name'] = instance.price.cycle.name
-#         data['start_date'] = instance.price.start_date
-#         data['end_date'] = instance.price.end_date
-#         data['unit'] = instance.product.unit.name
-#         data['category'] = instance.product.category.name
-#         data['product'] = instance.product.name
-#         data['product_id'] = instance.product.id
-#         data['description'] = instance.product.description
-#         return data
     
 class PriceCycleModelSerializer(serializers.ModelSerializer):
 
