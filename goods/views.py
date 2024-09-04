@@ -207,8 +207,6 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
                 # 如果商品及其规格存在的话，则修改并更新报价
                 if GoodsModel.objects.filter(name=row['name'], description=row['description'], brand=row['brand']).exists():
                     product_obj = GoodsModel.objects.filter(name=row['name'], description=row['description'], brand=row['brand']).first()
-                    if not product_obj:
-                        return Response({row_dict}, status=status.HTTP_200_OK)
                     ser = GoodsModelSerializer(product_obj, data=row_dict, context={'user_id': request.user.id, 'cycle_id':cycle_id}, partial=True)
                     if ser.is_valid():
                         ser.save()
@@ -243,7 +241,7 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
 
                 # 如果不存在，则添加作为新的商品
                 else:
-                    ser = GoodsModelSerializer(data=row_dict, context={'user_id': request.user.id, 'cycle_id':cycle_id, 'dict':row_dict})
+                    ser = GoodsModelSerializer(data=row_dict, context={'user_id': request.user.id, 'cycle_id':cycle_id, 'upload':True})
                     if ser.is_valid():
                         ser.save()
                     else:

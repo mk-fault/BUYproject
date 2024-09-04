@@ -60,7 +60,28 @@ class GoodsModelSerializer(serializers.ModelSerializer):
     # 创建一个商品时，为它生成目前以及日期往后已存在的价格周期的价格对象
     def create(self, validated_data):
         if GoodsModel.objects.filter(name=validated_data['name'], description=validated_data['description'], brand=validated_data['brand']).exists():
-            raise serializers.ValidationError("已存在该规格商品")
+            if 'upload' in self.context:
+                product_obj = GoodsModel.objects.get(name=validated_data['name'], description=validated_data['description'], brand=validated_data['brand'])
+                cycle_id = self.context.get("cycle_id")
+                try:
+                    price_obj = PriceModel.objects.get(product=product_obj, cycle__id=cycle_id)
+                    price_obj.price = validated_data['price']
+                    price_obj.price_check_1 = validated_data['price_check_1']
+                    price_obj.price_check_2 = validated_data['price_check_2']
+                    price_obj.price_check_avg = validated_data['price_check_avg']
+                    price_obj.status = 2
+                    price_obj.reviewer_id = self.context['user_id']
+                    price_obj.review_time = datetime.datetime.now()
+                    price_obj.save()
+                except:
+                    price_obj = PriceModel.objects.create(product=product_obj, price=validated_data['price'], price_check_1=validated_data['price_check_1'], 
+                                                            price_check_2=validated_data['price_check_2'], price_check_avg=validated_data['price_check_avg'], 
+                                                            cycle=PriceCycleModel.objects.get(id=cycle_id), start_date=PriceCycleModel.objects.get(id=cycle_id).start_date, 
+                                                            end_date=PriceCycleModel.objects.get(id=cycle_id).end_date, status=2, creater_id=self.context['user_id'], 
+                                                            create_time=datetime.datetime.now(), reviewer_id=self.context['user_id'], review_time=datetime.datetime.now())
+                return product_obj
+            else:   
+                raise serializers.ValidationError("已存在该规格商品")
         price = validated_data.pop('price')
         price_check_1 = validated_data.pop('price_check_1')
         price_check_2 = validated_data.pop('price_check_2')
@@ -169,6 +190,7 @@ class GoodsModelSerializer(serializers.ModelSerializer):
 #         return data
     
 class PriceCycleModelSerializer(serializers.ModelSerializer):
+
     # status = serializers.BooleanField(default=True)
     class Meta:
         model = PriceCycleModel
