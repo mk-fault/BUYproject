@@ -116,7 +116,7 @@ class CartViewset(myresponse.CustomModelViewSet):
         success = 0
 
         # 获取送达日期对应的价格周期
-        cycle = PriceCycleModel.objects.filter(start_date__lte=deliver_date, end_date__gte=deliver_date).first()
+        cycle = PriceCycleModel.objects.filter(start_date__lte=deliver_date, end_date__gte=deliver_date).order_by('-start_date').first()
         if not cycle:
             return Response({"msg": "送达日期不在任何价格周期内，无法下单",
                                 "data": None,

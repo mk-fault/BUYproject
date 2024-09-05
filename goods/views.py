@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.conf import settings
 
 from rest_framework import viewsets
 from rest_framework import permissions
@@ -11,7 +12,7 @@ from .serializers import *
 from .pagination import GoodsPagination
 from account.permissions import *
 from .filters import *
-from orders.models import FundsModel, CartModel
+from orders.models import FundsModel, CartModel, OrdersModel, OrderDetailModel
 from orders.serializers import CartModelSerializer
 from utils import response as myresponse
 
@@ -344,10 +345,81 @@ class PriceCycleViewSet(viewsets.GenericViewSet,
                             "code": status.HTTP_200_OK}, status=status.HTTP_200_OK)
     
 
-    # @action(detail=True, methods=['post'])
-    # def 
+    @action(detail=True, methods=['post'])
+    def updatePrice(self, request, pk=None):
+        cycle = self.get_object()
         
+        # 查询所有绑定了该价格周期的订单
+        order_queryset = OrdersModel.objects.filter(cycle=cycle)
+        if not order_queryset.exists():
+            return Response({
+                "msg": "所选周期内不存在已下订单",
+                "data": None,
+                "code": status.HTTP_404_NOT_FOUND
+            }, status=status.HTTP_404_NOT_FOUND)
 
+        err_list = []
+        for order in order_queryset:
+            details = order.details.all()
+            for detail in details:
+
+                # 获取详情对应的商品对象，如果没有，表示商品被删除，加入到错误列表中
+                try:
+                    product = GoodsModel.objects.get(id=detail.product_id)
+                except:
+                    err_list.append[f"订单ID:{order.id}-详情ID:{detail.id}-商品ID:{detail.product_id}-商品名:{detail.product_name}"]
+                    continue
+
+                # 获取详情对应的商品对象，在该价格周期下的价格对象，如果没有，表示价格对象被删除，加入到错误列表中
+                try:
+                    price = PriceModel.objects.get(cycle=cycle, product=product).price
+                except:
+                    err_list.append[f"订单ID:{order.id}-详情ID:{detail.id}-商品ID:{detail.product_id}-商品名:{detail.product_name}"]
+                    continue
+
+                # 获取用于订单详情的图片
+                image = product.image
+                if image:
+                    detail_image_path = os.path.join('detail_image', 'goods', image.name.split('/')[-1])
+                    if not os.path.exists(os.path.join(settings.MEDIA_ROOT, detail_image_path)):
+                        shutil.copyfile(product.image.path, os.path.join(settings.MEDIA_ROOT, detail_image_path))
+                else:
+                    detail_image_path = None
+            
+                # 获取用于订单详情的资质
+                license = product.license
+                if license:
+                    detail_license_path = os.path.join('detail_image', 'license', license.name.split('/')[-1])
+                    if not os.path.exists(os.path.join(settings.MEDIA_ROOT, detail_license_path)):
+                        shutil.copyfile(product.license.path, os.path.join(settings.MEDIA_ROOT, detail_license_path))
+                else:
+                    detail_license_path = None
+
+                # 更新订单详情的price,image,license，如果订单已收货，则重新计算总价
+                try:
+                    detail.price = price
+                    detail.image = detail_image_path
+                    detail.license = detail_license_path
+                    if order.status in ["4", "5", "6"]:
+                        detail.cost = float(detail.received_quantity) * float(price)
+                    detail.save()
+                except:
+                    err_list.append[f"订单ID:{order.id}-详情ID:{detail.id}-商品ID:{detail.product_id}-商品名:{detail.product_name}"]
+                    continue
+        
+        if err_list:
+            return Response({
+                "msg": "部分价格更新失败，可能商品或价格被手动删除",
+                "data": err_list,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({
+                "msg": "订单商品价格更新完成",
+                "data": None,
+                "code": status.HTTP_200_OK
+            }, status=status.HTTP_200_OK)
+                    
         
 
 # 价格视图集
