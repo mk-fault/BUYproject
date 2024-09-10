@@ -250,7 +250,7 @@ class OrdersViewset(viewsets.GenericViewSet,
     
     def get_permissions(self):       
         # 仅粮油公司组能进行接单、发货、送达操作
-        if self.action in ["accept", "ship", "delivered", "argue", "agree", "gendeliver", "genfunds"]:
+        if self.action in ["accept", "ship", "delivered", "argue", "agree", "gendeliver", "genfunds", "gendeliverbycat"]:
             return [mypermissions.IsRole0()]
         elif self.action in ["confirm"]:
             return [mypermissions.IsRole2()]
@@ -595,17 +595,18 @@ class OrdersViewset(viewsets.GenericViewSet,
         deliver_date = request.data.get("deliver_date")
         school_id = request.data.get("school_id")
 
-        if not is_valid_date(deliver_date):
-            return Response({
-                "msg": "日期格式错误",
-                "data": None,
-                "code": status.HTTP_400_BAD_REQUEST
-            }, status=status.HTTP_400_BAD_REQUEST)
-
 
         if not deliver_date:
             return Response({
                 "msg": "未选择送货时间",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+
+        if not is_valid_date(deliver_date):
+            return Response({
+                "msg": "日期格式错误",
                 "data": None,
                 "code": status.HTTP_400_BAD_REQUEST
             }, status=status.HTTP_400_BAD_REQUEST)
@@ -1013,6 +1014,239 @@ class OrdersViewset(viewsets.GenericViewSet,
                 "code": status.HTTP_200_OK
             }, status=status.HTTP_200_OK)
         
+    @action(methods=['post'], detail=False)
+    def gendeliverbycat(self, request, pk=None):
+        """
+        生成按照种类分类的送货表
+        """
+        deliver_date = request.data.get("deliver_date")
+        category_list = request.data.get("category_list")
+        school_id = request.data.get("school_id")
+
+        if not deliver_date:
+            return Response({
+                "msg": "未选择送货时间",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+    
+
+        if not is_valid_date(deliver_date):
+            return Response({
+                "msg": "日期格式错误",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        
+        if not school_id:
+            return Response({
+                "msg": "未选择收货单位",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not category_list:
+            return Response({
+                "msg": "未选择商品种类",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 获取指定送货时间和收货单位的查询集
+        queryset = self.get_queryset()
+        queryset = queryset.filter(deliver_date=deliver_date, creater_id=school_id)
+        if not queryset:
+            return Response({
+                "msg": "未找到对应订单",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        
+        # 制作表单数据
+        category_data = {}
+        count = {}
+        categorys = []
+
+        for category_id in category_list:
+            category = CategoryModel.objects.filter(id=category_id).first()
+            if not category:
+                return Response({
+                    "msg": f"id为{category_id}的商品种类不存在",
+                    "data": None,
+                    "code": status.HTTP_400_BAD_REQUEST
+                }, status=status.HTTP_400_BAD_REQUEST)
+            categorys.append(category.name)
+
+        # 为每个种类制作data列表
+        for category in categorys:
+            category_data[category] = []
+            count[category] = 1
+
+        # 制作备注
+        note_list = []
+
+        for order in queryset:
+            # 跳过已完成和未接单的订单
+            if order.status == '6' or order.status == '0':
+                continue
+            if order.note:
+                note_list.append(f"{order.note}")
+            details = order.details.all()
+            for detail in details:
+                category = detail.category
+                if category not in categorys:
+                    continue
+
+                detail_data = []
+                detail_data.append(count[category])
+                count[category] += 1
+                detail_data.append(detail.product_name)
+                detail_data.append(detail.brand)
+                detail_data.append(detail.description)
+                detail_data.append(detail.order_quantity)
+                detail_data.append('')
+                detail_data.append(detail.note)
+                category_data[category].append(detail_data)
+
+        note = ";".join(note_list)
+        
+
+        # 获取收货单位
+        first_name = AccountModel.objects.get(id=school_id).first_name
+        
+        """
+        以下为生成表格样式
+        """
+        output = BytesIO()
+
+        workbook = xlsxwriter.Workbook(output, {"in_memory":True})
+
+        # 表示种类为空的数量，如果所有种类的数据都为空，表示所选时间没有要送的订单
+        empty_num = 0
+
+        # 遍历字典，为每个种类创建一个data列表，存储该种类下的订单详情信息，用于生成表格
+        for k, data in category_data.items():
+            if len(data) == 0:
+                empty_num += 1
+                continue
+            worksheet = workbook.add_worksheet(name=k)
+
+            # 设置列宽度
+            worksheet.set_column('A:G', 9)   # 单位列
+
+            # 合并单元格并添加标题
+            worksheet.set_row(0, 33)
+            worksheet.merge_range('A1:G1', '泸定县粮油购销有限责任公司配送清单', workbook.add_format({
+                'align': 'center', 
+                'valign': 'vcenter', 
+                'font_size': 18, 
+                'bold': True
+            }))
+
+            worksheet.set_row(1, 25)
+            worksheet.write('A2', '收货单位', workbook.add_format({
+                'align': 'center', 
+                'valign': 'vcenter', 
+                'font_size': 11, 
+            }))
+            worksheet.merge_range('B2:D2', first_name, workbook.add_format({
+                'align': 'center', 
+                'valign': 'vcenter', 
+                'font_size': 11, 
+            }))
+            worksheet.write('E2', '配送日期', workbook.add_format({
+                'align': 'center', 
+                'valign': 'vcenter', 
+                'font_size': 11, 
+            }))
+            worksheet.merge_range('F2:G2', deliver_date, workbook.add_format({
+                'align': 'center', 
+                'valign': 'vcenter', 
+                'font_size': 11, 
+            }))
+
+            # 添加表头
+            worksheet.set_row(2, 25)
+            headers = ['行号', '品名', '品牌', '规格', '预订数量', '实收数量', '备注']
+            worksheet.write_row('A3', headers, workbook.add_format({
+                'align': 'center', 
+                'valign': 'vcenter', 
+                'font_size': 11, 
+                'border': 1
+            }))
+
+            # 写入数据
+            row_start = 3
+            row_for_total = 0
+            for row, record in enumerate(data, start=row_start):
+                worksheet.set_row(row, 25)
+                worksheet.write_row(row, 0, record, workbook.add_format({
+                    'border': 1,
+                    'font_size': 11,
+                    'align': 'center',
+                    'valign': 'vcenter'
+                    }))
+                row_for_total = row
+
+            # 添加备注：
+            row_for_total += 1
+            worksheet.set_row(row_for_total, 25)
+            worksheet.write(f'A{row_for_total+1}', '备注', workbook.add_format({
+                'align': 'center', 
+                'valign': 'vcenter', 
+                'font_size': 11, 
+            }))
+            worksheet.merge_range(f'B{row_for_total+1}:G{row_for_total+1}', f'{note}', workbook.add_format({
+                'align': 'left', 
+                'valign': 'vcenter', 
+                'font_size': 11, 
+            }))
+            
+            # 添加额外信息
+            row_for_total += 1
+            worksheet.set_row(row_for_total, 25)
+            worksheet.write(f'A{row_for_total+1}', '送货人', workbook.add_format({
+                'align': 'center', 
+                'valign': 'vcenter', 
+                'font_size': 11, 
+            }))
+            worksheet.merge_range(f'B{row_for_total+1}:C{row_for_total+1}', '')
+
+            worksheet.write(f'D{row_for_total+1}', '验收人', workbook.add_format({
+                'align': 'center', 
+                'valign': 'vcenter', 
+                'font_size': 11, 
+            }))
+            # worksheet.merge_range(f'E{row_for_total+1}:F{row_for_total+1}', '')
+
+            worksheet.write(f'F{row_for_total+1}', '负责人', workbook.add_format({
+                'align': 'center', 
+                'valign': 'vcenter', 
+                'font_size': 11, 
+            }))
+            # worksheet.merge_range(f'H{row_for_total+1}:I{row_for_total+1}', '')
+
+        # 关闭Excel文件
+        workbook.close()
+
+        # 判单是否数据全为空
+        if len(category_data) == empty_num:
+            return Response({
+                "msg":"所选日期没有待送货物品",
+                "data":None,
+                "code":status.HTTP_204_NO_CONTENT
+            }, status=status.HTTP_204_NO_CONTENT)
+
+        output.seek(0)
+        response = HttpResponse(output, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        file_name = f"{first_name}_{deliver_date}_送货单.xlsx"
+        response['Content-Disposition'] = f'attachment; filename="{quote(file_name)}"'
+
+        return response
+
+
 
 
 class OrderDetailsViewset(viewsets.GenericViewSet):

@@ -120,6 +120,12 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
                              "data": None,
                              "code": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
         
+        # 检查数量是否为空
+        if not quantity:
+            return Response({"msg": "数量不能为空",
+                             "data": None,
+                             "code": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        
         # 检查购物车中是否有相同人创建的相同的商品和经费来源的项，如果有，进行累加
         existing_cart = CartModel.objects.filter(product=product, funds=funds, creater_id=creater_id).first()
         if existing_cart:
