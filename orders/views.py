@@ -228,7 +228,8 @@ class CartViewset(myresponse.CustomModelViewSet):
                     "code": status.HTTP_200_OK}, status=status.HTTP_200_OK)
     
 class OrdersViewset(viewsets.GenericViewSet,
-                   myresponse.CustomListModelMixin):
+                   myresponse.CustomListModelMixin,
+                   myresponse.CustomDestroyModelMixin):
     queryset = OrdersModel.objects.all()
     serializer_class = OrdersModelSerializer
     filterset_class = OrdersFilter
@@ -250,9 +251,9 @@ class OrdersViewset(viewsets.GenericViewSet,
     
     def get_permissions(self):       
         # 仅粮油公司组能进行接单、发货、送达操作
-        if self.action in ["accept", "ship", "delivered", "argue", "agree", "gendeliver", "genfunds", "gendeliverbycat"]:
+        if self.action in ["accept", "ship", "delivered", "gendeliver", "genfunds", "gendeliverbycat", "destroy", "confirm"]:
             return [mypermissions.IsRole0()]
-        elif self.action in ["confirm"]:
+        elif self.action in ["argue", "agree"]:
             return [mypermissions.IsRole2()]
         elif self.action in ["cancel"]:
             return [mypermissions.IsRole0OrRole2()]
@@ -1246,56 +1247,187 @@ class OrdersViewset(viewsets.GenericViewSet,
 
         return response
 
+    @action(methods=['post'], detail=True)
+    def addproduct(self, request, pk =None):
+        order = self.get_object()
 
+        product_id = request.data.get("product_id")
+        funds_id = request.data.get("funds_id")
+        quantity = request.data.get("quantity")
+        note = request.data.get("note")
 
+        if self.request.user.role == "2":
+            if order.status != "0":
+                return Response({
+                    "msg": "订单已接单，无法添加商品",
+                    "data": None,
+                    "code": status.HTTP_400_BAD_REQUEST
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+        if self.request.user.role == "0":
+            if order.status == "0":
+                return Response({
+                    "msg": "无法对未接单的订单添加商品",
+                    "data": None,
+                    "code": status.HTTP_400_BAD_REQUEST
+                }, status=status.HTTP_400_BAD_REQUEST)
 
-class OrderDetailsViewset(viewsets.GenericViewSet):
+        if not product_id or not funds_id or not quantity:
+            return Response({
+                "msg": "商品ID、经费来源ID、数量不能为空",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 获取商品实例
+        product = GoodsModel.objects.filter(id=product_id).first()
+        if not product:
+            return Response({
+                "msg": "商品不存在",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 获取商品的经费来源实例
+        funds = FundsModel.objects.filter(id=funds_id).first()
+        if not funds:
+            return Response({
+                "msg": "经费来源不存在",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 获取商品的价格
+        price = product.prices.filter(status=2, start_date__lte=order.deliver_date, end_date__gte=order.deliver_date).order_by('-id').first()
+
+        # 获取商品用于生成订单详情的图片
+        image = product.image
+        if image:
+            detail_image_path = os.path.join('detail_image', 'goods', image.name.split('/')[-1])
+        else:
+            detail_image_path = None
+        
+        # 获取商品用于生成订单详情的资质
+        license = product.license
+        if license:
+            detail_license_path = os.path.join('detail_image', 'license', license.name.split('/')[-1])
+        else:
+            detail_license_path = None
+
+        # 创建订单详情
+        try:
+            if not price:
+                OrderDetailModel.objects.create(order=order, product_id=product.id, product_name=product.name, brand=product.brand,
+                                        description=product.description, category=product.category.name,
+                                        price=0, funds=funds.name, order_quantity=quantity, image=detail_image_path, license=detail_license_path, note=note)
+            else:
+                OrderDetailModel.objects.create(order=order, product_id=product.id, product_name=product.name, brand=product.brand,
+                                        description=product.description, category=product.category.name,
+                                        price=price.price, funds=funds.name, order_quantity=quantity, image=detail_image_path, license=detail_license_path, note=note)
+        except:
+            return Response({
+                "msg": "添加商品失败",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 订单商品数量加1
+        order.product_num += 1
+        order.save()
+
+        return Response({
+            "msg": "添加商品成功",
+            "data": None,
+            "code": status.HTTP_200_OK
+        }, status=status.HTTP_200_OK)
+
+    def perform_destroy(self, instance):
+        if instance.status == "0":
+            return Response({
+                "msg": "无法删除未接单的订单",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        return super().perform_destroy(instance)
+
+class OrderDetailsViewset(viewsets.GenericViewSet,
+                          myresponse.CustomDestroyModelMixin):
     """
     仅用于确认收货，无CRUD方法
     """
     queryset = OrderDetailModel.objects.all()
-    permission_classes = [mypermissions.IsRole2]
+    permission_classes = [mypermissions.IsRole0OrRole2]
     serializer_class = OrderDetailModelSerializer
 
     # 仅获取当期用户创建的订单详情
     def get_queryset(self):
         queryset = super().get_queryset()
-        queryset = queryset.filter(order__creater_id=self.request.user.id)
+        if self.request.user.role == "2":
+            queryset = queryset.filter(order__creater_id=self.request.user.id)
         return queryset
     
-    @action(methods=['post'], detail=True)
-    def confirm(self, request, pk=None):
-        """
-        确认收货，并修改订单的完成项和完成时间
-        """
-        # 获取data中的数据，实际收货数量
-        received_quantity = request.data.get("received_quantity")
+    def perform_destroy(self, instance):
+        order_obj = instance.order
+        # 如果当前为学校用户，只能删除未接单的订单详情
+        if self.request.user.role == "2":
+            if order_obj.status != "0":
+                return Response({
+                    "msg": "订单已接单，无法删除",
+                    "data": None,
+                    "code": status.HTTP_400_BAD_REQUEST
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+        if self.request.user.role == "0":
+            if order_obj.status == "0":
+                return Response({
+                    "msg": "无法对未接单的订单删除商品",
+                    "data": None,
+                    "code": status.HTTP_400_BAD_REQUEST
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+        # 删除时，将order的product_num减少1
+        order_obj.product_num -= 1
+        order_obj.save()
 
-        # 获取到当期订单详情实例，用于修改
-        item = self.get_object()
+        # 如果订单详情的商品数量为0，则删除订单
+        if order_obj.product_num == 0:
+            order_obj.delete()
+        
+        return super().perform_destroy(instance)
+    
+    # @action(methods=['post'], detail=True)
+    # def confirm(self, request, pk=None):
+    #     """
+    #     确认收货，并修改订单的完成项和完成时间
+    #     """
+    #     # 获取data中的数据，实际收货数量
+    #     received_quantity = request.data.get("received_quantity")
 
-        # 修改订单详情数据
-        item.received_quantity = received_quantity
-        item.cost = float(received_quantity) * float(item.price)
-        item.recipient_id = request.user.id
-        item.recipient_time = datetime.datetime.now()
-        item.save()
+    #     # 获取到当期订单详情实例，用于修改
+    #     item = self.get_object()
 
-        # 修改订单详情关联的订单的数据，修改完成项
-        order = item.order
-        order.finish_num += 1
+    #     # 修改订单详情数据
+    #     item.received_quantity = received_quantity
+    #     item.cost = float(received_quantity) * float(item.price)
+    #     item.recipient_id = request.user.id
+    #     item.recipient_time = datetime.datetime.now()
+    #     item.save()
 
-        # 如果完成项等于下单数量，则添加完成时间，表示订单已全部完成
-        if order.finish_num == order.product_num:
-            order.status = 4
-        order.save()
+    #     # 修改订单详情关联的订单的数据，修改完成项
+    #     order = item.order
+    #     order.finish_num += 1
 
-        # 返回响应
-        return Response({
-            "msg": "商品收货成功",
-            "data": None,
-            "code": status.HTTP_200_OK
-        }, status=status.HTTP_200_OK)
+    #     # 如果完成项等于下单数量，则添加完成时间，表示订单已全部完成
+    #     if order.finish_num == order.product_num:
+    #         order.status = 4
+    #     order.save()
+
+    #     # 返回响应
+    #     return Response({
+    #         "msg": "商品收货成功",
+    #         "data": None,
+    #         "code": status.HTTP_200_OK
+    #     }, status=status.HTTP_200_OK)
     
 
 

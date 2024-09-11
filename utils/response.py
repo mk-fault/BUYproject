@@ -107,5 +107,7 @@ class CustomUpdateModelMixin(mixins.UpdateModelMixin):
 class CustomDestroyModelMixin(mixins.DestroyModelMixin):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        self.perform_destroy(instance)
+        resp = self.perform_destroy(instance)
+        if resp:
+            return resp
         return CustomResponse(data=None, msg="删除成功", status=status.HTTP_204_NO_CONTENT)
