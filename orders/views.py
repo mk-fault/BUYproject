@@ -5,6 +5,7 @@ from urllib.parse import quote
 import datetime
 import xlsxwriter
 import os
+from decimal import Decimal
 
 from django.shortcuts import render
 from django.http import FileResponse, HttpResponse, StreamingHttpResponse
@@ -26,6 +27,7 @@ from account.models import AccountModel
 from utils import response as myresponse
 from goods.models import PriceCycleModel, CategoryModel
 from utils.func import is_valid_date
+from utils.logger import log_operate
 
 # Create your views here.
 
@@ -115,6 +117,9 @@ class CartViewset(myresponse.CustomModelViewSet):
         # 创建成功数，大于0则在失败时不删除订单
         success = 0
 
+        # 商品ID列表
+        purchase_list = []
+
         # 获取送达日期对应的价格周期
         cycle = PriceCycleModel.objects.filter(start_date__lte=deliver_date, end_date__gte=deliver_date).order_by('-start_date').first()
         if not cycle:
@@ -189,6 +194,7 @@ class CartViewset(myresponse.CustomModelViewSet):
                                             price=price.price, funds=cart.funds.name, order_quantity=cart.quantity, image=detail_image_path, license=detail_license_path, note=cart.note)
                 success += 1
                 cart_del_list.append(cart)
+                purchase_list.append(product.id)
             except:
                 fail_list.append(product.name)
             # 下单后删除购物车项
@@ -222,6 +228,9 @@ class CartViewset(myresponse.CustomModelViewSet):
         for cart in cart_del_list:
             cart.delete()
 
+        # 记录操作
+        log_operate(user_id, f"下单{order.id}，商品：{purchase_list}")
+
         # 返回响应
         return Response({"msg": "商品下单成功",
                     "data": None,
@@ -229,7 +238,8 @@ class CartViewset(myresponse.CustomModelViewSet):
     
 class OrdersViewset(viewsets.GenericViewSet,
                    myresponse.CustomListModelMixin,
-                   myresponse.CustomDestroyModelMixin):
+                   myresponse.CustomDestroyModelMixin,
+                   myresponse.CustomUpdateModelMixin):
     queryset = OrdersModel.objects.all()
     serializer_class = OrdersModelSerializer
     filterset_class = OrdersFilter
@@ -248,6 +258,11 @@ class OrdersViewset(viewsets.GenericViewSet,
         queryset = queryset.filter(creater_id=user_id).order_by(default_order_by)
         return queryset
 
+    def get_serializer_class(self):
+        if self.action == 'partial_update':
+            return OrderPatchSerializer
+        else:
+            return OrdersModelSerializer
     
     def get_permissions(self):       
         # 仅粮油公司组能进行接单、发货、送达操作
@@ -255,7 +270,7 @@ class OrdersViewset(viewsets.GenericViewSet,
             return [mypermissions.IsRole0()]
         elif self.action in ["argue", "agree"]:
             return [mypermissions.IsRole2()]
-        elif self.action in ["cancel"]:
+        elif self.action in ["cancel", "partial_update"]:
             return [mypermissions.IsRole0OrRole2()]
         else:
             return [permissions.IsAuthenticated()]
@@ -307,6 +322,9 @@ class OrdersViewset(viewsets.GenericViewSet,
         order.status = 1
         order.save()
 
+        # 记录操作
+        log_operate(user_id, f"接单{order.id}")
+
         # 返回响应
         return Response({
             "msg": "接单成功",
@@ -332,6 +350,9 @@ class OrdersViewset(viewsets.GenericViewSet,
         # 修改订单状态
         order.status = 2
         order.save()
+
+        # 记录操作
+        log_operate(request.user.id, f"发货{order.id}")
 
         # 返回响应
         return Response({
@@ -359,6 +380,9 @@ class OrdersViewset(viewsets.GenericViewSet,
         order.status = 3
         order.save()
 
+        # 记录操作
+        log_operate(request.user.id, f"送达{order.id}")
+
         # 反回响应
         return Response({
             "msg": "订单送达成功",
@@ -384,6 +408,9 @@ class OrdersViewset(viewsets.GenericViewSet,
         # 修改订单状态
         order.status = 5
         order.save()
+
+        # 记录操作
+        log_operate(request.user.id, f"有异议{order.id}")
 
         # 放回响应
         return Response({
@@ -412,6 +439,9 @@ class OrdersViewset(viewsets.GenericViewSet,
         order.finish_time = datetime.datetime.now()
         order.save()
 
+        # 记录操作
+        log_operate(request.user.id, f"订单完成{order.id}")
+
         # 放回响应
         return Response({
             "msg": "订单复核结果：订单完成",
@@ -434,6 +464,9 @@ class OrdersViewset(viewsets.GenericViewSet,
 
         # err_list存储收货失败的订单详情号
         err_list = []
+
+        # 记录收货ID
+        detail_list = []
 
         # 接收确认收货的订单详情id和收货数量对象
         recv = request.data.get("recv")
@@ -461,6 +494,7 @@ class OrdersViewset(viewsets.GenericViewSet,
                 item.recipient_id = request.user.id
                 item.recipient_time = datetime.datetime.now()
                 item.save()
+                detail_list.append(detail_id)
             except:
                 err_list.append(detail_id)
 
@@ -469,6 +503,9 @@ class OrdersViewset(viewsets.GenericViewSet,
         if order.finish_num == order.product_num:
             order.status = 4
         order.save()
+
+        # 记录操作
+        log_operate(request.user.id, f"确认收货{order.id}，订单详情：{detail_list}")
 
         if len(err_list) != 0:
             return Response({
@@ -987,7 +1024,9 @@ class OrdersViewset(viewsets.GenericViewSet,
                     # 没有则创建新的购物车实例
                     CartModel.objects.create(product=product, funds=funds, quantity=detail.order_quantity, creater_id=order.creater_id, note=detail.note)
 
-            order.delete()
+            # 记录操作
+            log_operate(request.user.id, f"取消订单{order.id}")
+            order.delete() 
 
             return Response({
                 "msg": "订单取消成功",
@@ -1009,6 +1048,10 @@ class OrdersViewset(viewsets.GenericViewSet,
             order.accepter_id = None
             order.accept_time = None
             order.save()
+
+            # 记录操作
+            log_operate(request.user.id, f"取消订单{order.id}")
+
             return Response({
                 "msg": "订单取消接单成功",
                 "data": None,
@@ -1335,6 +1378,9 @@ class OrdersViewset(viewsets.GenericViewSet,
         order.product_num += 1
         order.save()
 
+        # 记录操作
+        log_operate(request.user.id, f"添加商品{product.id}到订单{order.id}")
+
         return Response({
             "msg": "添加商品成功",
             "data": None,
@@ -1348,7 +1394,97 @@ class OrdersViewset(viewsets.GenericViewSet,
                 "data": None,
                 "code": status.HTTP_400_BAD_REQUEST
             }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 记录操作
+        log_operate(self.request.user.id, f"删除订单{instance.id}")
+
         return super().perform_destroy(instance)
+
+    def perform_update(self, serializer):
+        if not is_valid_date(str(serializer.validated_data.get("deliver_date"))):
+            return Response({
+                "msg": "日期格式错误",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if self.request.user.role == "2" and serializer.instance.status not in ["0", "1"]:
+            return Response({
+                "msg": "无法修改已发货的订单",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if self.request.user.role == "0" and serializer.instance.status == "0":
+            return Response({
+                "msg": "无法修改未接单的订单",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 记录操作
+        log_operate(self.request.user.id, f"修改订单{serializer.instance.id}送货日期为{serializer.validated_data.get('deliver_date')}")
+        return super().perform_update(serializer)
+
+    @action(methods=['post'], detail=False)
+    def gentotal(self, request, pk=None):
+        school_id = request.data.get("school_id")
+        funds_id = request.data.get("funds_id")
+        cycle_id = request.data.get("cycle_id")
+        status_list = request.data.get("status_list")
+        
+        if not funds_id:
+            return Response({
+                "msg": "未选择经费来源",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not cycle_id:
+            return Response({
+                "msg": "未选择周期",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not status_list:
+            return Response({
+                "msg": "未选择订单状态",
+                "data": None,
+                "code": status.HTTP_400_BAD_REQUEST
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 获取查询集
+        queryset = self.get_queryset()
+
+        if self.request.user.role != "2" and school_id:
+            queryset = queryset.filter(creater_id=school_id)
+
+        queryset = queryset.filter(cycle=cycle_id, status__in=status_list)
+
+        if not queryset:
+            return Response({
+                "msg": "未找到对应订单",
+                "data": None,
+                "code": status.HTTP_404_NOT_FOUND
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        total = 0
+
+        for order in queryset:
+            for detail in order.details.all():
+                if detail.funds == FundsModel.objects.filter(id=funds_id).first().name:
+                    total += detail.cost if detail.cost else Decimal(detail.price) * Decimal(detail.order_quantity)
+        
+        return Response({
+            "msg": "获取成功",
+            "data": total,
+            "code": status.HTTP_200_OK
+        }, status=status.HTTP_200_OK)
+        
+
+
+
 
 class OrderDetailsViewset(viewsets.GenericViewSet,
                           myresponse.CustomDestroyModelMixin):
@@ -1387,11 +1523,18 @@ class OrderDetailsViewset(viewsets.GenericViewSet,
             
         # 删除时，将order的product_num减少1
         order_obj.product_num -= 1
+        if instance.received_quantity:
+            order_obj.finish_num -= 1
         order_obj.save()
+
+        # 记录操作
+        log_operate(self.request.user.id, f"删除订单号{order_obj.id}的订单详情{instance.id}")
 
         # 如果订单详情的商品数量为0，则删除订单
         if order_obj.product_num == 0:
             order_obj.delete()
+            # 记录操作
+            log_operate(self.request.user.id, f"删除订单{order_obj.id}")
         
         return super().perform_destroy(instance)
     

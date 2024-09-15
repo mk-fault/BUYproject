@@ -66,3 +66,14 @@ class OrderDetailModel(models.Model):
         db_table = 'order_detail'
         verbose_name = '订单详情'
         verbose_name_plural = verbose_name
+
+
+class OrderLogModel(models.Model):
+    operator_id = models.IntegerField(verbose_name="操作人ID")
+    operate_time = models.DateTimeField(auto_now_add=True, verbose_name="操作时间")
+    operation = models.TextField(verbose_name="操作内容")
+
+    class Meta:
+        db_table = 'order_log'
+        verbose_name = '订单日志'
+        verbose_name_plural = verbose_name

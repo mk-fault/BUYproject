@@ -101,7 +101,9 @@ class CustomUpdateModelMixin(mixins.UpdateModelMixin):
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
+        resp = self.perform_update(serializer)
+        if resp:
+            return resp
         return CustomResponse(data=serializer.data, msg="更新成功", status=status.HTTP_200_OK)
 
 class CustomDestroyModelMixin(mixins.DestroyModelMixin):

@@ -15,6 +15,7 @@ from .filters import *
 from orders.models import FundsModel, CartModel, OrdersModel, OrderDetailModel
 from orders.serializers import CartModelSerializer
 from utils import response as myresponse
+from utils.logger import log_operate
 
 import datetime
 import pandas as pd
@@ -68,14 +69,6 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
 
     #     return queryset
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-
-        # 学院用户只能看到上架商品
-        if self.request.user.role == '2':
-            queryset = queryset.filter(status=1)
-        
-        return queryset.order_by('id')
     
     @action(detail=True, methods=["post"])
     def order(self, request, pk=None):
@@ -89,27 +82,6 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
 
         # 创建人ID为当前用户ID
         creater_id = request.user.id
-
-        # ser = CartModelSerializer(data={
-        #     'product': product_id,
-        #     'funds': funds,
-        #     'quantity': quantity,
-        #     'creater_id': creater_id
-        # })
-
-        # if ser.is_valid():
-        #     ser.save()
-        #     return Response({
-        #         "msg": "Product added to cart successfully",
-        #         "data": None,
-        #         "code": status.HTTP_201_CREATED
-        #     }, status=status.HTTP_201_CREATED)
-        # else:
-        #     return Response({
-        #         "msg": "Invalid data",
-        #         "data": ser.errors,
-        #         "code": status.HTTP_400_BAD_REQUEST
-        #     }, status=status.HTTP_400_BAD_REQUEST)
         
         # 获取经费来源实例
         funds_obj = FundsModel.objects.filter(id=funds).first()
@@ -154,6 +126,15 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
                 "data": None,
                 "code": status.HTTP_400_BAD_REQUEST
             }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 保存文件
+        file_path = os.path.join('price_upload', f.name.split('.')[0] + '-' + str(datetime.datetime.now().timestamp()) + '.' + f.name.split('.')[-1])
+        if not os.path.exists(os.path.join(settings.MEDIA_ROOT, 'price_upload')):
+            os.makedirs(os.path.join(settings.MEDIA_ROOT, 'price_upload'))
+
+        with open(os.path.join(settings.MEDIA_ROOT, file_path), 'wb') as file:
+            for chunk in f.chunks():
+                file.write(chunk)
         
         if cycle_id is None:
             return Response({
@@ -254,6 +235,9 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
                     else:
                         errs['add'].append(row_dict)
 
+        # 记录操作日志
+        log_operate(request.user.id, f"上传价格表格{f.name}")
+
         # 如果添加过程存在错误，则返回错误信息
         if errs['add'] or errs['edit']:
             return Response({
@@ -334,6 +318,9 @@ class PriceCycleViewSet(viewsets.GenericViewSet,
                 end_date=instance.end_date,
                 status=0
             )
+        
+        # 记录操作日志
+        log_operate(self.request.user.id, f"创建价格周期{instance.id}")
     
     # 弃用一个周期，并将该周期的价格对象的状态都设置为-99（已弃用）
     @action(detail=True, methods=['post'])
@@ -346,6 +333,10 @@ class PriceCycleViewSet(viewsets.GenericViewSet,
             price.status = -99
             price.save()
         price_cycle.save()
+
+        # 记录操作日志
+        log_operate(request.user.id, f"弃用价格周期{price_cycle.id}")
+
         return Response({"msg": "价格周期弃用成功",
                             "data": None,
                             "code": status.HTTP_200_OK}, status=status.HTTP_200_OK)
@@ -412,6 +403,9 @@ class PriceCycleViewSet(viewsets.GenericViewSet,
                 except:
                     err_list.append[f"订单ID:{order.id}-详情ID:{detail.id}-商品ID:{detail.product_id}-商品名:{detail.product_name}"]
                     continue
+        
+        # 记录操作日志
+        log_operate(request.user.id, f"更新所有订单详情在价格周期{cycle.id}的价格")
         
         if err_list:
             return Response({
