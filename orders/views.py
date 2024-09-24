@@ -1474,7 +1474,11 @@ class OrdersViewset(viewsets.GenericViewSet,
         for order in queryset:
             for detail in order.details.all():
                 if detail.funds == FundsModel.objects.filter(id=funds_id).first().name:
-                    total += detail.cost if detail.cost else Decimal(detail.price) * Decimal(detail.order_quantity)
+                    # total += detail.cost if detail.cost else Decimal(detail.price) * Decimal(detail.order_quantity)
+                    if detail.cost is not None:
+                        total += detail.cost
+                    else:
+                        total += Decimal(detail.price) * Decimal(detail.order_quantity)
         
         return Response({
             "msg": "获取成功",
