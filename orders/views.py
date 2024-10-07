@@ -609,7 +609,8 @@ class OrdersViewset(viewsets.GenericViewSet,
                     "下单时间": str(order.create_time).split(".")[0],
                     "送货日期": str(order.deliver_date),
                     "收货时间": str(detail.recipient_time).split(".")[0] if detail.recipient_time else None,
-                    "学校": school_name
+                    "学校": school_name,
+                    "备注": detail.note
                 }
                 data.append(detail_data)
 
