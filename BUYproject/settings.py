@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 import datetime
+from concurrent_log_handler import ConcurrentRotatingFileHandler
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -208,11 +209,12 @@ LOGGING = {
     "handlers": {
         "file": {
             "level": "INFO",
-            "class": "logging.handlers.RotatingFileHandler",
+            "class": "concurrent_log_handler.ConcurrentRotatingFileHandler",
             "filename": os.path.join(BASE_DIR, "logs/log.log"),
             "maxBytes": 1024 * 1024 * 50,
-            "backupCount": 5,
+            "backupCount": 3,
             "formatter": "verbose",
+            'encoding': 'utf-8',
         },
     },
     "loggers": {
