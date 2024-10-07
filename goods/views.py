@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.conf import settings
+from django.http import HttpResponse
 
 from rest_framework import viewsets
 from rest_framework import permissions
@@ -20,6 +21,9 @@ from utils.logger import log_operate
 import datetime
 import pandas as pd
 import numpy as np
+from io import BytesIO
+import xlsxwriter
+from urllib.parse import quote
 
 # 商品视图集
 class GoodsViewSet(myresponse.CustomModelViewSet):
@@ -42,6 +46,8 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
             return [IsRole2()]
         elif self.action == 'upload':
             return [IsRole1()]
+        elif self.action in ['genask']:
+            return [IsRole0OrRole1()]
         else:
             return [IsRole0()]
         
@@ -255,6 +261,94 @@ class GoodsViewSet(myresponse.CustomModelViewSet):
                 "code": status.HTTP_200_OK
             }, status=status.HTTP_200_OK)
 
+    @action(methods=['post'], detail=False)
+    def genask(self, request, pk=None):
+        # 商品queryset
+        goods_queryset = self.get_queryset()
+
+        # 商品种类queryset
+        category_queryset = CategoryModel.objects.all()
+
+        # 生成询价单文件
+        output = BytesIO()
+        workbook = xlsxwriter.Workbook(output, {'in_memory': True})
+
+        # 遍历商品种类，生成询价单
+        for category in category_queryset:
+            worksheet = workbook.add_worksheet(category.name)
+
+            # 获得商品数据
+            goods_category_queryset = goods_queryset.filter(category=category)
+            data = []
+            no = 1
+            for goods in goods_category_queryset:
+                data.append([no, goods.brand, goods.name, goods.description, None, None, None, None, None])
+                no += 1
+            # 设置列宽
+            worksheet.set_column('A:A', 6)
+            worksheet.set_column('B:I', 22)
+            # 添加标题
+            worksheet.set_row(0, 30)
+            worksheet.merge_range('A1:I1', f'学校大宗食品采购询价单({category.name})', workbook.add_format({
+                'font_size': 16, 
+                'align': 'center', 
+                'valign': 'vcenter'
+            }))
+            # 添加表头
+            worksheet.set_row(2, 30)
+            header = ['序号', '品牌', '商品名称', '规格', '询价1', '询价2', '平均价格', '下调5%价格', '四舍五入保留两位']
+            worksheet.write_row('A3', header, workbook.add_format({
+                'bold': True,
+                'align': 'center',
+                'valign': 'vcenter',
+                'font_size': 12,
+                'border': 1
+            }))
+            # 添加数据
+            row_start = 3
+            row_for_total = 0
+            for row, record in enumerate(data, start=row_start):
+                worksheet.set_row(row, 25)
+                worksheet.write_row(row, 0, record, workbook.add_format({
+                    'align': 'center',
+                    'valign': 'vcenter',
+                    'font_size': 12,
+                    'border': 1
+                }))
+                row_for_total = row
+            
+            # 添加额外信息
+            row_for_total += 3
+            worksheet.set_row(row_for_total, 30)
+            worksheet.merge_range(f'A{row_for_total+1}:D{row_for_total+1}', '询价人员签字：', workbook.add_format({
+                'align': 'left',
+                'valign': 'vcenter',
+                'font_size': 12
+            }))
+            row_for_total += 1
+            worksheet.set_row(row_for_total, 30)
+            worksheet.merge_range(f'A{row_for_total+1}:D{row_for_total+1}', '监督人员签字：', workbook.add_format({
+                'align': 'left',
+                'valign': 'vcenter',
+                'font_size': 12
+            }))
+
+        
+        # 关闭文件
+        workbook.close()
+
+        # 返回文件
+        today = datetime.datetime.now().strftime('%Y-%m-%d')
+        output.seek(0)
+        response = HttpResponse(output, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        file_name = f"泸定县学校大宗食品询价清单({today}).xlsx"
+        response['Content-Disposition'] = f'attachment; filename="{quote(file_name)}"'
+
+        return response
+
+
+
+    
 
 # 价格周期视图集
 class PriceCycleViewSet(viewsets.GenericViewSet,

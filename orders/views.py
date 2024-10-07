@@ -1490,7 +1490,6 @@ class OrdersViewset(viewsets.GenericViewSet,
 
 
 
-
 class OrderDetailsViewset(viewsets.GenericViewSet,
                           myresponse.CustomDestroyModelMixin):
     """
