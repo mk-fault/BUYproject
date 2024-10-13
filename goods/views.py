@@ -458,14 +458,14 @@ class PriceCycleViewSet(viewsets.GenericViewSet,
                 try:
                     product = GoodsModel.objects.get(id=detail.product_id)
                 except:
-                    err_list.append[f"订单ID:{order.id}-详情ID:{detail.id}-商品ID:{detail.product_id}-商品名:{detail.product_name}"]
+                    err_list.append(f"订单ID:{order.id}-详情ID:{detail.id}-商品ID:{detail.product_id}-商品名:{detail.product_name}")
                     continue
 
                 # 获取详情对应的商品对象，在该价格周期下的价格对象，如果没有，表示价格对象被删除，加入到错误列表中
                 try:
                     price = PriceModel.objects.get(cycle=cycle, product=product).price
                 except:
-                    err_list.append[f"订单ID:{order.id}-详情ID:{detail.id}-商品ID:{detail.product_id}-商品名:{detail.product_name}"]
+                    err_list.append(f"订单ID:{order.id}-详情ID:{detail.id}-商品ID:{detail.product_id}-商品名:{detail.product_name}")
                     continue
 
                 # 获取用于订单详情的图片
@@ -495,7 +495,7 @@ class PriceCycleViewSet(viewsets.GenericViewSet,
                         detail.cost = float(detail.received_quantity) * float(price)
                     detail.save()
                 except:
-                    err_list.append[f"订单ID:{order.id}-详情ID:{detail.id}-商品ID:{detail.product_id}-商品名:{detail.product_name}"]
+                    err_list.append(f"订单ID:{order.id}-详情ID:{detail.id}-商品ID:{detail.product_id}-商品名:{detail.product_name}")
                     continue
         
         # 记录操作日志
